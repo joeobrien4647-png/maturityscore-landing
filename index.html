@@ -63,17 +63,20 @@
           btn.disabled = true;
           btn.textContent = 'Joining...';
           try {
-            const res = await fetch('https://api.web3forms.com/submit', {
+            const res = await fetch('https://formsubmit.co/ajax/minihello@agentmail.to', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
               body: JSON.stringify({
-                access_key: 'd1c56e87-1e8f-4c3e-9c3a-4f1b8e7d9a2c',
                 email: email,
-                subject: 'MaturityScore Waitlist Signup',
-                from_name: 'MaturityScore Waitlist'
+                _subject: 'MaturityScore Waitlist Signup',
+                _template: 'table'
               })
             });
-            if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
               msg.textContent = "🎉 You're on the list! We'll be in touch soon.";
               msg.className = "mt-3 text-sm text-green-400";
               document.getElementById('email-input').value = '';
