@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — Customer Service Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">🎧</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Customer Service Operations Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your customer service function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key customer service capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class CX benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance</a> · 
+                <a href="hr-assessment.html" class="hover:text-slate-300">HR</a> · 
+                <a href="procurement-assessment.html" class="hover:text-slate-300">Procurement</a> · 
+                <a href="it-assessment.html" class="hover:text-slate-300">IT</a> · 
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-violet-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-violet-400 uppercase tracking-wide">Customer Contact Management</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your Customer Service Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gap Analysis -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                    <a href="assessment.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+                        📊 Try Finance Assessment
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-12 text-slate-500">
+                    <p>Powered by <a href="index.html" class="text-violet-400 hover:text-violet-300">MaturityScore.io</a></p>
+                    <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-violet-400 hover:text-violet-300">minihello@agentmail.to</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Customer Service Operations Assessment Categories & Questions
+        const categories = [
+            {
+                name: "Customer Contact Management",
+                icon: "📞",
+                questions: [
+                    {
+                        text: "How do customers contact your service organization?",
+                        options: [
+                            { level: 1, text: "Single channel (phone only), limited hours" },
+                            { level: 2, text: "Multiple channels (phone + email) but siloed systems" },
+                            { level: 3, text: "Omnichannel with unified queue and consistent experience" },
+                            { level: 4, text: "Seamless omnichannel with context preservation across channels" }
+                        ]
+                    },
+                    {
+                        text: "How is customer contact routing handled?",
+                        options: [
+                            { level: 1, text: "Manual distribution, no skills-based routing" },
+                            { level: 2, text: "Basic ACD with simple queue rules" },
+                            { level: 3, text: "Skills-based routing with priority queues and SLA tracking" },
+                            { level: 4, text: "AI-powered routing with predictive matching and sentiment-aware escalation" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage service level agreements (SLAs)?",
+                        options: [
+                            { level: 1, text: "No formal SLAs defined or tracked" },
+                            { level: 2, text: "Basic SLAs (response time) with periodic reporting" },
+                            { level: 3, text: "Multi-tier SLAs with real-time dashboards and alerts" },
+                            { level: 4, text: "Dynamic SLAs with predictive breach prevention and automated remediation" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle peak demand and capacity?",
+                        options: [
+                            { level: 1, text: "Reactive staffing, frequent long wait times" },
+                            { level: 2, text: "Historical forecasting with manual scheduling" },
+                            { level: 3, text: "Workforce management with real-time adherence and intraday adjustments" },
+                            { level: 4, text: "AI forecasting with automated scheduling and demand shaping" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Case Management & Resolution",
+                icon: "📋",
+                questions: [
+                    {
+                        text: "How are customer cases tracked and managed?",
+                        options: [
+                            { level: 1, text: "Spreadsheets or email, no central system" },
+                            { level: 2, text: "Basic ticketing system with manual updates" },
+                            { level: 3, text: "CRM-integrated case management with workflow automation" },
+                            { level: 4, text: "Intelligent case management with auto-categorization and resolution recommendations" }
+                        ]
+                    },
+                    {
+                        text: "What is your first contact resolution (FCR) capability?",
+                        options: [
+                            { level: 1, text: "Not tracked, multiple handoffs common" },
+                            { level: 2, text: "FCR tracked but <50%, limited agent empowerment" },
+                            { level: 3, text: "FCR >70%, agents empowered with knowledge and authority" },
+                            { level: 4, text: "FCR >85%, AI-assisted resolution with proactive issue prevention" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your knowledge management?",
+                        options: [
+                            { level: 1, text: "Tribal knowledge, no central repository" },
+                            { level: 2, text: "Basic knowledge base, infrequently updated" },
+                            { level: 3, text: "Structured KB with search, feedback loops, and governance" },
+                            { level: 4, text: "AI-powered knowledge with auto-surfacing, continuous learning, and agent assist" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle escalations and complex issues?",
+                        options: [
+                            { level: 1, text: "Ad-hoc escalation, no defined process" },
+                            { level: 2, text: "Tiered support with manual escalation rules" },
+                            { level: 3, text: "Defined escalation matrix with SLAs and root cause tracking" },
+                            { level: 4, text: "Predictive escalation with proactive specialist engagement" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Workforce Optimization",
+                icon: "👥",
+                questions: [
+                    {
+                        text: "How do you forecast and schedule your workforce?",
+                        options: [
+                            { level: 1, text: "Fixed schedules, no demand forecasting" },
+                            { level: 2, text: "Spreadsheet-based forecasting, manual scheduling" },
+                            { level: 3, text: "WFM system with multi-skill scheduling and optimization" },
+                            { level: 4, text: "AI-driven forecasting with automated scheduling and gig workforce integration" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to quality management?",
+                        options: [
+                            { level: 1, text: "No quality monitoring or coaching" },
+                            { level: 2, text: "Random call sampling with basic scorecards" },
+                            { level: 3, text: "100% recording with automated QA sampling and coaching programs" },
+                            { level: 4, text: "AI-powered speech analytics with real-time coaching and sentiment analysis" }
+                        ]
+                    },
+                    {
+                        text: "How do you develop and train your agents?",
+                        options: [
+                            { level: 1, text: "Minimal training, learn on the job" },
+                            { level: 2, text: "Initial training with occasional refreshers" },
+                            { level: 3, text: "Structured training paths with certification and e-learning" },
+                            { level: 4, text: "Continuous learning with AI-personalized development and simulation" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage agent performance?",
+                        options: [
+                            { level: 1, text: "Limited metrics, annual reviews only" },
+                            { level: 2, text: "Basic KPIs (AHT, calls/day) with monthly reviews" },
+                            { level: 3, text: "Balanced scorecard with quality, efficiency, and customer metrics" },
+                            { level: 4, text: "Real-time performance dashboards with gamification and career pathing" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Self-Service & Digital",
+                icon: "🤖",
+                questions: [
+                    {
+                        text: "What self-service options do you offer customers?",
+                        options: [
+                            { level: 1, text: "No self-service, all contacts require agent" },
+                            { level: 2, text: "Basic FAQ page and IVR menu" },
+                            { level: 3, text: "Customer portal with account management and guided troubleshooting" },
+                            { level: 4, text: "AI-powered self-service handling 60%+ of inquiries" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your chatbot/virtual agent capability?",
+                        options: [
+                            { level: 1, text: "No chatbot or virtual agent" },
+                            { level: 2, text: "Basic rule-based chatbot with limited scope" },
+                            { level: 3, text: "NLU-powered chatbot with live agent handoff" },
+                            { level: 4, text: "Conversational AI with context awareness and autonomous resolution" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle digital and social channels?",
+                        options: [
+                            { level: 1, text: "Social media not monitored for service" },
+                            { level: 2, text: "Manual social monitoring, separate from main queue" },
+                            { level: 3, text: "Integrated social care with unified agent desktop" },
+                            { level: 4, text: "Proactive social listening with automated response and influencer routing" }
+                        ]
+                    },
+                    {
+                        text: "What is your mobile customer service capability?",
+                        options: [
+                            { level: 1, text: "No mobile-optimized service options" },
+                            { level: 2, text: "Mobile-responsive website" },
+                            { level: 3, text: "Native app with in-app support and messaging" },
+                            { level: 4, text: "Full mobile experience with visual IVR, co-browse, and video support" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Customer Experience & Insights",
+                icon: "💡",
+                questions: [
+                    {
+                        text: "How do you measure customer satisfaction?",
+                        options: [
+                            { level: 1, text: "No systematic measurement" },
+                            { level: 2, text: "Periodic surveys (annual/quarterly)" },
+                            { level: 3, text: "Post-interaction surveys (CSAT, NPS) with closed-loop follow-up" },
+                            { level: 4, text: "Real-time sentiment analysis with predictive satisfaction scoring" }
+                        ]
+                    },
+                    {
+                        text: "How do you capture and act on Voice of Customer (VoC)?",
+                        options: [
+                            { level: 1, text: "No formal VoC program" },
+                            { level: 2, text: "Complaint tracking with basic categorization" },
+                            { level: 3, text: "Multi-channel VoC with text analytics and action planning" },
+                            { level: 4, text: "Unified VoC platform with predictive insights and automated actions" }
+                        ]
+                    },
+                    {
+                        text: "How do you use customer journey analytics?",
+                        options: [
+                            { level: 1, text: "No journey visibility, channel-centric view only" },
+                            { level: 2, text: "Basic journey mapping exercises (static)" },
+                            { level: 3, text: "Journey analytics with touchpoint tracking and experience KPIs" },
+                            { level: 4, text: "Real-time journey orchestration with next-best-action and personalization" }
+                        ]
+                    },
+                    {
+                        text: "How do you drive continuous improvement?",
+                        options: [
+                            { level: 1, text: "Reactive to complaints, no structured improvement" },
+                            { level: 2, text: "Periodic improvement projects" },
+                            { level: 3, text: "Continuous improvement program with root cause analysis and A/B testing" },
+                            { level: 4, text: "AI-driven optimization with automated process mining and adaptive experiences" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Maturity Level Definitions
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive customer service with significant improvement opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Basic service capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive service function delivering strong customer outcomes" },
+            4: { name: "Leading", color: "level-4", description: "World-class customer experience driving competitive advantage" }
+        };
+
+        // Recommendations by category and level gap
+        const recommendations = {
+            "Customer Contact Management": {
+                low: "Implement AI-powered routing and predictive SLA management",
+                medium: "Deploy omnichannel platform with skills-based routing",
+                high: "Establish formal SLAs and implement workforce management basics"
+            },
+            "Case Management & Resolution": {
+                low: "Deploy AI case assist and predictive escalation",
+                medium: "Implement structured knowledge management and empower FCR",
+                high: "Deploy CRM-based case management with basic workflow"
+            },
+            "Workforce Optimization": {
+                low: "Implement AI-powered speech analytics and personalized coaching",
+                medium: "Deploy WFM system with quality management program",
+                high: "Establish KPIs and basic training program"
+            },
+            "Self-Service & Digital": {
+                low: "Upgrade to conversational AI with autonomous resolution",
+                medium: "Deploy NLU chatbot and customer portal",
+                high: "Implement basic self-service (FAQ, IVR improvements)"
+            },
+            "Customer Experience & Insights": {
+                low: "Implement journey orchestration and AI-driven optimization",
+                medium: "Deploy VoC analytics and journey tracking",
+                high: "Establish CSAT/NPS measurement and closed-loop process"
+            }
+        };
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-violet-500 ${savedAnswer === option.level ? 'border-violet-500 bg-violet-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-violet-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return { name: category.name, icon: category.icon, score: avg };
+            });
+
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            const overallLevel = Math.round(overallScore);
+
+            return { categoryScores, overallScore, overallLevel };
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore, overallLevel } = calculateResults();
+            const levelInfo = maturityLevels[overallLevel];
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = levelInfo.name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${levelInfo.color}`;
+            document.getElementById('overall-description').textContent = levelInfo.description;
+
+            // Category breakdown
+            document.getElementById('category-results').innerHTML = categoryScores.map(cat => {
+                const level = Math.round(cat.score);
+                const levelInfo = maturityLevels[level];
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-slate-400">${cat.score.toFixed(1)} — ${levelInfo.name}</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${levelInfo.color} h-full transition-all duration-500" style="width: ${(cat.score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Gap analysis
+            document.getElementById('gap-analysis').innerHTML = categoryScores
+                .map(cat => ({ ...cat, gap: 4 - cat.score }))
+                .sort((a, b) => b.gap - a.gap)
+                .map(cat => `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-red-400">Gap: ${cat.gap.toFixed(1)} levels</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500/50 h-full" style="width: ${(cat.gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Recommendations
+            const sortedCategories = [...categoryScores].sort((a, b) => a.score - b.score);
+            document.getElementById('recommendations').innerHTML = sortedCategories.slice(0, 3).map((cat, index) => {
+                const gap = 4 - cat.score;
+                const priority = gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low';
+                const rec = recommendations[cat.name][priority];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">${cat.icon}</span>
+                            <span class="font-semibold">${cat.name}</span>
+                            <span class="ml-auto text-sm px-2 py-1 rounded ${index === 0 ? 'bg-red-500/20 text-red-400' : index === 1 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                Priority ${index + 1}
+                            </span>
+                        </div>
+                        <p class="text-slate-300">${rec}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'Customer-Service-Maturity-Assessment-Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
