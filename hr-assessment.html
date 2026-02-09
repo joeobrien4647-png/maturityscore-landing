@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — HR Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">👥</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">HR Operations Maturity Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your HR function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key HR capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class HR benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance Assessment</a> · 
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-purple-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-purple-400 uppercase tracking-wide">HR Service Delivery</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your HR Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gap Analysis -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                    <a href="assessment.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+                        📊 Try Finance Assessment
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-12 text-slate-500">
+                    <p>Powered by <a href="index.html" class="text-purple-400 hover:text-purple-300">MaturityScore.io</a></p>
+                    <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-purple-400 hover:text-purple-300">minihello@agentmail.to</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HR Operations Assessment Categories & Questions
+        const categories = [
+            {
+                name: "HR Service Delivery",
+                icon: "🏢",
+                questions: [
+                    {
+                        text: "How are HR services delivered to employees?",
+                        options: [
+                            { level: 1, text: "Decentralized, each location handles HR differently" },
+                            { level: 2, text: "Some shared services, but many local variations remain" },
+                            { level: 3, text: "Centralized HR shared services with tiered support model" },
+                            { level: 4, text: "Global HR shared services with omnichannel digital-first delivery" }
+                        ]
+                    },
+                    {
+                        text: "What is the level of employee self-service adoption?",
+                        options: [
+                            { level: 1, text: "Limited self-service, most requests go through HR" },
+                            { level: 2, text: "Basic self-service for time-off and personal info updates" },
+                            { level: 3, text: "Comprehensive self-service portal covering 70%+ of transactions" },
+                            { level: 4, text: "AI-powered virtual assistant handles 80%+ of inquiries" }
+                        ]
+                    },
+                    {
+                        text: "How do you measure HR service quality?",
+                        options: [
+                            { level: 1, text: "No formal measurement, relying on ad-hoc feedback" },
+                            { level: 2, text: "Basic ticket tracking and occasional surveys" },
+                            { level: 3, text: "SLAs with regular monitoring and employee satisfaction metrics" },
+                            { level: 4, text: "Real-time NPS, predictive analytics, and continuous improvement loops" }
+                        ]
+                    },
+                    {
+                        text: "What is your HR-to-employee ratio?",
+                        options: [
+                            { level: 1, text: "Above 1:50 (more than 2 HR staff per 100 employees)" },
+                            { level: 2, text: "1:50 to 1:75" },
+                            { level: 3, text: "1:75 to 1:100" },
+                            { level: 4, text: "Below 1:100 with high service quality maintained" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "HR Technology & Data",
+                icon: "💻",
+                questions: [
+                    {
+                        text: "What is the state of your HR technology landscape?",
+                        options: [
+                            { level: 1, text: "Multiple disconnected systems with manual data transfers" },
+                            { level: 2, text: "Core HRIS in place but limited integration" },
+                            { level: 3, text: "Integrated HCM suite with cloud-based core systems" },
+                            { level: 4, text: "Unified digital HR platform with AI/ML capabilities" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your people analytics capability?",
+                        options: [
+                            { level: 1, text: "Basic headcount reports only" },
+                            { level: 2, text: "Standard HR metrics and dashboards" },
+                            { level: 3, text: "Advanced analytics with turnover prediction and workforce planning" },
+                            { level: 4, text: "Real-time people analytics with prescriptive recommendations" }
+                        ]
+                    },
+                    {
+                        text: "What level of HR process automation have you achieved?",
+                        options: [
+                            { level: 1, text: "Mostly manual processes with paper forms" },
+                            { level: 2, text: "Basic workflow automation for approvals" },
+                            { level: 3, text: "RPA for high-volume processes, integrated workflows" },
+                            { level: 4, text: "Intelligent automation with AI handling complex decisions" }
+                        ]
+                    },
+                    {
+                        text: "How do you ensure HR data quality and governance?",
+                        options: [
+                            { level: 1, text: "No formal data governance, frequent data quality issues" },
+                            { level: 2, text: "Basic data standards, periodic cleanup efforts" },
+                            { level: 3, text: "Defined data ownership and regular quality audits" },
+                            { level: 4, text: "Automated data quality monitoring with real-time remediation" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Talent Management",
+                icon: "🌟",
+                questions: [
+                    {
+                        text: "How effective is your recruiting process?",
+                        options: [
+                            { level: 1, text: "Reactive hiring, long time-to-fill, limited candidate pipeline" },
+                            { level: 2, text: "Structured process but still largely manual and slow" },
+                            { level: 3, text: "Proactive talent pipelines, ATS-driven with good metrics" },
+                            { level: 4, text: "AI-powered sourcing, skills-based hiring, exceptional candidate experience" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach learning and development?",
+                        options: [
+                            { level: 1, text: "Ad-hoc training, no structured development programs" },
+                            { level: 2, text: "Standard training catalog, compliance-focused" },
+                            { level: 3, text: "Personalized learning paths linked to career development" },
+                            { level: 4, text: "AI-curated learning, skills marketplace, continuous development culture" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to succession planning?",
+                        options: [
+                            { level: 1, text: "No formal succession planning" },
+                            { level: 2, text: "Succession planning for top executives only" },
+                            { level: 3, text: "Comprehensive succession planning with talent pools" },
+                            { level: 4, text: "Dynamic succession with real-time readiness tracking and development" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage performance?",
+                        options: [
+                            { level: 1, text: "Annual reviews with outdated rating systems" },
+                            { level: 2, text: "Semi-annual reviews with goal setting" },
+                            { level: 3, text: "Continuous feedback culture with quarterly check-ins" },
+                            { level: 4, text: "Real-time performance insights with coaching and development focus" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Compensation & Benefits",
+                icon: "💰",
+                questions: [
+                    {
+                        text: "How sophisticated is your total rewards strategy?",
+                        options: [
+                            { level: 1, text: "Basic pay with limited benefits, no clear strategy" },
+                            { level: 2, text: "Competitive pay with standard benefits package" },
+                            { level: 3, text: "Total rewards philosophy with flexible benefits" },
+                            { level: 4, text: "Personalized total rewards with real-time market alignment" }
+                        ]
+                    },
+                    {
+                        text: "What is the state of your payroll operations?",
+                        options: [
+                            { level: 1, text: "Multiple payroll systems, high error rate, compliance risks" },
+                            { level: 2, text: "Consolidated payroll with manual exception handling" },
+                            { level: 3, text: "Automated payroll with strong controls and compliance" },
+                            { level: 4, text: "Global payroll platform with real-time processing and insights" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach pay equity and transparency?",
+                        options: [
+                            { level: 1, text: "No formal pay equity analysis" },
+                            { level: 2, text: "Annual pay equity review with remediation" },
+                            { level: 3, text: "Ongoing pay equity monitoring with proactive adjustments" },
+                            { level: 4, text: "Real-time pay equity analytics with full transparency frameworks" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your benefits administration?",
+                        options: [
+                            { level: 1, text: "Paper-based enrollment, limited employee communication" },
+                            { level: 2, text: "Online enrollment with basic decision support" },
+                            { level: 3, text: "Integrated benefits platform with personalized recommendations" },
+                            { level: 4, text: "AI-driven benefits optimization with wellness integration" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Employee Experience",
+                icon: "❤️",
+                questions: [
+                    {
+                        text: "How do you measure and act on employee engagement?",
+                        options: [
+                            { level: 1, text: "Annual survey with limited follow-up" },
+                            { level: 2, text: "Regular pulse surveys with manager action plans" },
+                            { level: 3, text: "Continuous listening with real-time sentiment analysis" },
+                            { level: 4, text: "Predictive engagement analytics driving proactive interventions" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to diversity, equity, and inclusion?",
+                        options: [
+                            { level: 1, text: "Basic compliance focus, no strategic DEI program" },
+                            { level: 2, text: "DEI initiatives in place but limited measurement" },
+                            { level: 3, text: "Comprehensive DEI strategy with goals and accountability" },
+                            { level: 4, text: "DEI embedded in all HR processes with transparent reporting" }
+                        ]
+                    },
+                    {
+                        text: "How well does your onboarding set new hires up for success?",
+                        options: [
+                            { level: 1, text: "Paperwork-focused first day, sink-or-swim approach" },
+                            { level: 2, text: "Structured first week with basic orientation" },
+                            { level: 3, text: "90-day onboarding journey with milestones and check-ins" },
+                            { level: 4, text: "Personalized preboarding through first year with digital experience" }
+                        ]
+                    },
+                    {
+                        text: "How do you support employee wellbeing?",
+                        options: [
+                            { level: 1, text: "EAP exists but rarely promoted or used" },
+                            { level: 2, text: "Wellness programs available but low participation" },
+                            { level: 3, text: "Holistic wellbeing strategy covering mental, physical, financial" },
+                            { level: 4, text: "Proactive wellbeing support with personalized interventions" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Maturity Level Definitions
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive HR with significant improvement opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Foundational HR capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive HR function delivering strong business value" },
+            4: { name: "Leading", color: "level-4", description: "World-class HR driving competitive advantage" }
+        };
+
+        // Recommendations by category and level gap
+        const recommendations = {
+            "HR Service Delivery": {
+                low: "Implement employee self-service portal to reduce HR transaction volume",
+                medium: "Establish tiered service model with clear escalation paths",
+                high: "Deploy AI chatbot for Tier 0 support, consolidate to shared services"
+            },
+            "HR Technology & Data": {
+                low: "Invest in people analytics capabilities and HR dashboards",
+                medium: "Consolidate HRIS landscape and implement workflow automation",
+                high: "Prioritize cloud HCM transformation with integrated data platform"
+            },
+            "Talent Management": {
+                low: "Implement continuous feedback and coaching culture",
+                medium: "Build talent pipelines and strengthen succession planning",
+                high: "Transform recruiting with AI and establish skills-based approach"
+            },
+            "Compensation & Benefits": {
+                low: "Conduct pay equity analysis and develop total rewards philosophy",
+                medium: "Modernize benefits with flexible options and decision support",
+                high: "Consolidate global payroll and implement real-time compensation analytics"
+            },
+            "Employee Experience": {
+                low: "Launch employee listening program with action planning",
+                medium: "Develop comprehensive DEI strategy with measurable goals",
+                high: "Transform onboarding and build holistic wellbeing program"
+            }
+        };
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-purple-500 ${savedAnswer === option.level ? 'border-purple-500 bg-purple-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-purple-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return { name: category.name, icon: category.icon, score: avg };
+            });
+
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            const overallLevel = Math.round(overallScore);
+
+            return { categoryScores, overallScore, overallLevel };
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore, overallLevel } = calculateResults();
+            const levelInfo = maturityLevels[overallLevel];
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = levelInfo.name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${levelInfo.color}`;
+            document.getElementById('overall-description').textContent = levelInfo.description;
+
+            // Category breakdown
+            document.getElementById('category-results').innerHTML = categoryScores.map(cat => {
+                const level = Math.round(cat.score);
+                const levelInfo = maturityLevels[level];
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-slate-400">${cat.score.toFixed(1)} — ${levelInfo.name}</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${levelInfo.color} h-full transition-all duration-500" style="width: ${(cat.score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Gap analysis
+            document.getElementById('gap-analysis').innerHTML = categoryScores
+                .map(cat => ({ ...cat, gap: 4 - cat.score }))
+                .sort((a, b) => b.gap - a.gap)
+                .map(cat => `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-red-400">Gap: ${cat.gap.toFixed(1)} levels</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500/50 h-full" style="width: ${(cat.gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Recommendations
+            const sortedCategories = [...categoryScores].sort((a, b) => a.score - b.score);
+            document.getElementById('recommendations').innerHTML = sortedCategories.slice(0, 3).map((cat, index) => {
+                const gap = 4 - cat.score;
+                const priority = gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low';
+                const rec = recommendations[cat.name][priority];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">${cat.icon}</span>
+                            <span class="font-semibold">${cat.name}</span>
+                            <span class="ml-auto text-sm px-2 py-1 rounded ${index === 0 ? 'bg-red-500/20 text-red-400' : index === 1 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                Priority ${index + 1}
+                            </span>
+                        </div>
+                        <p class="text-slate-300">${rec}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'HR-Maturity-Assessment-Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
