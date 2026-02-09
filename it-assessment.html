@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — IT Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">💻</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">IT Operations Maturity Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your IT function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key IT capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class IT benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance</a> · 
+                <a href="hr-assessment.html" class="hover:text-slate-300">HR</a> · 
+                <a href="procurement-assessment.html" class="hover:text-slate-300">Procurement</a> · 
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-cyan-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-cyan-400 uppercase tracking-wide">IT Service Management</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your IT Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gap Analysis -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                    <a href="assessment.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+                        📊 Try Finance Assessment
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-12 text-slate-500">
+                    <p>Powered by <a href="index.html" class="text-cyan-400 hover:text-cyan-300">MaturityScore.io</a></p>
+                    <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-cyan-400 hover:text-cyan-300">minihello@agentmail.to</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IT Operations Assessment Categories & Questions
+        const categories = [
+            {
+                name: "IT Service Management",
+                icon: "🎫",
+                questions: [
+                    {
+                        text: "How are IT services delivered to the business?",
+                        options: [
+                            { level: 1, text: "Reactive break-fix support, no formal service catalog" },
+                            { level: 2, text: "Basic ticketing system with informal service definitions" },
+                            { level: 3, text: "ITIL-aligned service desk with defined SLAs and service catalog" },
+                            { level: 4, text: "AI-powered service management with predictive support and self-healing" }
+                        ]
+                    },
+                    {
+                        text: "What is your incident and problem management maturity?",
+                        options: [
+                            { level: 1, text: "No formal process, issues handled ad-hoc" },
+                            { level: 2, text: "Basic incident tracking, limited root cause analysis" },
+                            { level: 3, text: "Formal incident/problem management with trend analysis and known error database" },
+                            { level: 4, text: "AIOps-driven incident detection with automated remediation and prevention" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage IT changes and releases?",
+                        options: [
+                            { level: 1, text: "Changes made without formal process, frequent issues" },
+                            { level: 2, text: "Basic change approval process, manual deployments" },
+                            { level: 3, text: "CAB governance, automated testing, structured release management" },
+                            { level: 4, text: "DevOps with CI/CD pipelines, feature flags, and zero-downtime deployments" }
+                        ]
+                    },
+                    {
+                        text: "How effective is your IT self-service?",
+                        options: [
+                            { level: 1, text: "Users must contact IT for everything" },
+                            { level: 2, text: "Basic self-service for password resets and simple requests" },
+                            { level: 3, text: "Comprehensive self-service portal with knowledge base and automated fulfillment" },
+                            { level: 4, text: "AI virtual agent handling 80%+ of requests with natural language understanding" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Infrastructure & Cloud",
+                icon: "☁️",
+                questions: [
+                    {
+                        text: "What is the state of your infrastructure strategy?",
+                        options: [
+                            { level: 1, text: "Legacy on-premises infrastructure, limited visibility" },
+                            { level: 2, text: "Some cloud adoption but still primarily on-prem" },
+                            { level: 3, text: "Cloud-first strategy with hybrid infrastructure" },
+                            { level: 4, text: "Cloud-native architecture with multi-cloud optimization" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your infrastructure automation?",
+                        options: [
+                            { level: 1, text: "Manual provisioning and configuration" },
+                            { level: 2, text: "Scripts for common tasks, some automation" },
+                            { level: 3, text: "Infrastructure as Code (IaC), automated provisioning" },
+                            { level: 4, text: "GitOps, policy-as-code, fully automated infrastructure lifecycle" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage capacity and performance?",
+                        options: [
+                            { level: 1, text: "Reactive — address issues when they occur" },
+                            { level: 2, text: "Basic monitoring with manual threshold alerts" },
+                            { level: 3, text: "Comprehensive APM with capacity planning and trending" },
+                            { level: 4, text: "AI-driven capacity management with auto-scaling and optimization" }
+                        ]
+                    },
+                    {
+                        text: "What is your disaster recovery and business continuity posture?",
+                        options: [
+                            { level: 1, text: "Backups exist but untested, no formal DR plan" },
+                            { level: 2, text: "DR plan documented, annual testing" },
+                            { level: 3, text: "Tested DR with defined RPO/RTO, regular exercises" },
+                            { level: 4, text: "Active-active/multi-region with automated failover and chaos engineering" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Security & Compliance",
+                icon: "🔒",
+                questions: [
+                    {
+                        text: "How mature is your cybersecurity program?",
+                        options: [
+                            { level: 1, text: "Basic antivirus and firewall, no security strategy" },
+                            { level: 2, text: "Security tools in place but siloed, reactive approach" },
+                            { level: 3, text: "Security framework adopted (NIST, ISO 27001), proactive threat management" },
+                            { level: 4, text: "Zero-trust architecture, threat intelligence, automated response" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage identity and access?",
+                        options: [
+                            { level: 1, text: "Manual account management, shared credentials common" },
+                            { level: 2, text: "Centralized directory, basic access controls" },
+                            { level: 3, text: "SSO, MFA, role-based access with regular reviews" },
+                            { level: 4, text: "Zero-trust IAM with adaptive authentication and just-in-time access" }
+                        ]
+                    },
+                    {
+                        text: "What is your vulnerability management maturity?",
+                        options: [
+                            { level: 1, text: "No regular scanning, patches applied sporadically" },
+                            { level: 2, text: "Periodic vulnerability scans, manual patching" },
+                            { level: 3, text: "Continuous scanning, risk-based patch management, SLAs" },
+                            { level: 4, text: "Automated vulnerability remediation with real-time risk scoring" }
+                        ]
+                    },
+                    {
+                        text: "How do you ensure regulatory compliance?",
+                        options: [
+                            { level: 1, text: "Compliance addressed only during audits" },
+                            { level: 2, text: "Manual compliance tracking, periodic assessments" },
+                            { level: 3, text: "Compliance automation, continuous monitoring" },
+                            { level: 4, text: "Real-time compliance dashboard with automated evidence collection" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Data & Analytics",
+                icon: "📊",
+                questions: [
+                    {
+                        text: "How mature is your IT data management?",
+                        options: [
+                            { level: 1, text: "Data siloed in systems, no central visibility" },
+                            { level: 2, text: "Some data consolidation, basic reporting" },
+                            { level: 3, text: "Data warehouse/lake, governed data models" },
+                            { level: 4, text: "Data mesh/fabric architecture with self-service analytics" }
+                        ]
+                    },
+                    {
+                        text: "How do you use data to drive IT decisions?",
+                        options: [
+                            { level: 1, text: "Gut feel and anecdotal evidence" },
+                            { level: 2, text: "Basic KPIs and operational metrics" },
+                            { level: 3, text: "Comprehensive IT dashboards with business alignment metrics" },
+                            { level: 4, text: "AI-driven insights with predictive and prescriptive recommendations" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to IT cost transparency?",
+                        options: [
+                            { level: 1, text: "IT is a cost center, limited visibility into spend" },
+                            { level: 2, text: "Basic cost tracking by category" },
+                            { level: 3, text: "FinOps practices, cloud cost optimization, showback" },
+                            { level: 4, text: "Real-time IT financial management with value-based chargeback" }
+                        ]
+                    },
+                    {
+                        text: "How do you leverage AI/ML in IT operations?",
+                        options: [
+                            { level: 1, text: "No AI/ML adoption in IT" },
+                            { level: 2, text: "Exploring use cases, pilots in progress" },
+                            { level: 3, text: "AIOps deployed for monitoring and alerting" },
+                            { level: 4, text: "Pervasive AI across IT with autonomous operations capabilities" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Strategy & Innovation",
+                icon: "🚀",
+                questions: [
+                    {
+                        text: "How aligned is IT with business strategy?",
+                        options: [
+                            { level: 1, text: "IT seen as support function, limited business engagement" },
+                            { level: 2, text: "IT participates in some business planning" },
+                            { level: 3, text: "IT strategy linked to business outcomes, regular engagement" },
+                            { level: 4, text: "IT as strategic partner, co-creating business value" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach innovation and emerging technology?",
+                        options: [
+                            { level: 1, text: "No focus on innovation, technology refreshes only when forced" },
+                            { level: 2, text: "Ad-hoc innovation, reactive technology adoption" },
+                            { level: 3, text: "Innovation program, technology radar, structured pilots" },
+                            { level: 4, text: "Innovation lab, partnerships with startups, embedded R&D" }
+                        ]
+                    },
+                    {
+                        text: "What is your IT operating model?",
+                        options: [
+                            { level: 1, text: "Siloed teams, project-based delivery" },
+                            { level: 2, text: "Some cross-functional collaboration, mix of project/product" },
+                            { level: 3, text: "Product-oriented teams, Agile at scale" },
+                            { level: 4, text: "Platform engineering, self-service capabilities, DevOps culture" }
+                        ]
+                    },
+                    {
+                        text: "How do you develop IT talent?",
+                        options: [
+                            { level: 1, text: "Limited training, high turnover, skills gaps" },
+                            { level: 2, text: "Basic training programs, external hiring focus" },
+                            { level: 3, text: "Structured career paths, certification programs, talent development" },
+                            { level: 4, text: "Learning culture, internal mobility, innovation time, top employer brand" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Maturity Level Definitions
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive IT with significant modernization opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Foundational IT capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive IT function enabling business value" },
+            4: { name: "Leading", color: "level-4", description: "World-class IT driving digital transformation" }
+        };
+
+        // Recommendations by category and level gap
+        const recommendations = {
+            "IT Service Management": {
+                low: "Implement knowledge management and expand self-service capabilities",
+                medium: "Adopt ITIL framework and formalize service level agreements",
+                high: "Modernize service desk with AI chatbot and automated incident routing"
+            },
+            "Infrastructure & Cloud": {
+                low: "Implement auto-scaling and optimize cloud costs with FinOps",
+                medium: "Adopt Infrastructure as Code and hybrid cloud strategy",
+                high: "Accelerate cloud migration and modernize legacy infrastructure"
+            },
+            "Security & Compliance": {
+                low: "Implement adaptive authentication and expand security automation",
+                medium: "Adopt security framework (NIST/ISO) and implement continuous monitoring",
+                high: "Establish formal security program with MFA, vulnerability management"
+            },
+            "Data & Analytics": {
+                low: "Implement AI/ML for IT operations (AIOps)",
+                medium: "Build IT data warehouse with FinOps and performance analytics",
+                high: "Consolidate IT data and establish basic KPI dashboards"
+            },
+            "Strategy & Innovation": {
+                low: "Establish innovation program with dedicated R&D capacity",
+                medium: "Align IT strategy with business outcomes, adopt Agile at scale",
+                high: "Elevate IT business engagement and build product-oriented teams"
+            }
+        };
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-cyan-500 ${savedAnswer === option.level ? 'border-cyan-500 bg-cyan-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-cyan-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return { name: category.name, icon: category.icon, score: avg };
+            });
+
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            const overallLevel = Math.round(overallScore);
+
+            return { categoryScores, overallScore, overallLevel };
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore, overallLevel } = calculateResults();
+            const levelInfo = maturityLevels[overallLevel];
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = levelInfo.name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${levelInfo.color}`;
+            document.getElementById('overall-description').textContent = levelInfo.description;
+
+            // Category breakdown
+            document.getElementById('category-results').innerHTML = categoryScores.map(cat => {
+                const level = Math.round(cat.score);
+                const levelInfo = maturityLevels[level];
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-slate-400">${cat.score.toFixed(1)} — ${levelInfo.name}</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${levelInfo.color} h-full transition-all duration-500" style="width: ${(cat.score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Gap analysis
+            document.getElementById('gap-analysis').innerHTML = categoryScores
+                .map(cat => ({ ...cat, gap: 4 - cat.score }))
+                .sort((a, b) => b.gap - a.gap)
+                .map(cat => `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-red-400">Gap: ${cat.gap.toFixed(1)} levels</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500/50 h-full" style="width: ${(cat.gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Recommendations
+            const sortedCategories = [...categoryScores].sort((a, b) => a.score - b.score);
+            document.getElementById('recommendations').innerHTML = sortedCategories.slice(0, 3).map((cat, index) => {
+                const gap = 4 - cat.score;
+                const priority = gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low';
+                const rec = recommendations[cat.name][priority];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">${cat.icon}</span>
+                            <span class="font-semibold">${cat.name}</span>
+                            <span class="ml-auto text-sm px-2 py-1 rounded ${index === 0 ? 'bg-red-500/20 text-red-400' : index === 1 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                Priority ${index + 1}
+                            </span>
+                        </div>
+                        <p class="text-slate-300">${rec}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'IT-Maturity-Assessment-Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
