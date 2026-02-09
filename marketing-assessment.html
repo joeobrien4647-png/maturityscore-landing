@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — Marketing Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">📣</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Marketing Operations Maturity Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your marketing operations stand on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key marketing capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class marketing operations benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance Assessment</a> · 
+                <a href="hr-assessment.html" class="hover:text-slate-300">HR Assessment</a> · 
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-pink-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-pink-400 uppercase tracking-wide">Marketing Strategy</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your Marketing Operations Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gap Analysis -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-12 text-center bg-gradient-to-r from-pink-900/50 to-purple-900/50 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold mb-4">Want expert help improving your marketing ops?</h3>
+                    <p class="text-slate-300 mb-6">Get a personalized transformation roadmap from our team.</p>
+                    <a href="https://joeobrien4647-png.github.io/maturityscore-landing/#waitlist" class="inline-block bg-white text-slate-900 font-semibold py-3 px-6 rounded-lg hover:bg-slate-100 transition-colors">
+                        Join the Waitlist →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Marketing Operations Assessment Categories and Questions
+        const categories = [
+            {
+                name: "Marketing Strategy & Governance",
+                icon: "🎯",
+                questions: [
+                    {
+                        text: "How well-defined is your marketing operating model?",
+                        options: [
+                            { level: 1, text: "Ad-hoc structure, unclear roles and responsibilities" },
+                            { level: 2, text: "Basic team structure with some defined processes" },
+                            { level: 3, text: "Clear operating model with defined workflows and governance" },
+                            { level: 4, text: "Agile marketing organization with cross-functional pods and continuous optimization" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage marketing budget and resource allocation?",
+                        options: [
+                            { level: 1, text: "Annual budget set at start of year with little flexibility" },
+                            { level: 2, text: "Quarterly reviews with some reallocation capability" },
+                            { level: 3, text: "Dynamic budgeting with real-time performance-based allocation" },
+                            { level: 4, text: "AI-driven budget optimization with predictive ROI modeling" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your brand governance framework?",
+                        options: [
+                            { level: 1, text: "No formal brand guidelines, inconsistent brand execution" },
+                            { level: 2, text: "Basic brand guidelines exist but compliance is spotty" },
+                            { level: 3, text: "Comprehensive brand portal with clear approval workflows" },
+                            { level: 4, text: "AI-powered brand compliance with automated asset management" }
+                        ]
+                    },
+                    {
+                        text: "How aligned is marketing with sales and other business functions?",
+                        options: [
+                            { level: 1, text: "Marketing and sales operate in silos with frequent friction" },
+                            { level: 2, text: "Regular meetings but limited shared goals or handoff process" },
+                            { level: 3, text: "Formal SLAs, shared metrics, and integrated lead management" },
+                            { level: 4, text: "Revenue operations model with unified customer journey ownership" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Marketing Technology & Data",
+                icon: "💻",
+                questions: [
+                    {
+                        text: "What is the state of your marketing technology stack?",
+                        options: [
+                            { level: 1, text: "Disconnected point solutions with manual data transfers" },
+                            { level: 2, text: "Core platforms in place but limited integration" },
+                            { level: 3, text: "Integrated martech stack with CDP and unified data" },
+                            { level: 4, text: "Composable martech architecture with real-time orchestration" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your customer data management?",
+                        options: [
+                            { level: 1, text: "Fragmented customer data across multiple systems" },
+                            { level: 2, text: "Basic CRM with some data consolidation" },
+                            { level: 3, text: "Customer Data Platform with unified profiles" },
+                            { level: 4, text: "Real-time identity resolution with predictive customer insights" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach marketing automation?",
+                        options: [
+                            { level: 1, text: "Manual campaign execution with batch email sends" },
+                            { level: 2, text: "Basic email automation and drip campaigns" },
+                            { level: 3, text: "Cross-channel automation with behavioral triggers" },
+                            { level: 4, text: "AI-driven personalization with real-time decisioning" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to marketing data governance?",
+                        options: [
+                            { level: 1, text: "No formal data governance, unclear data quality" },
+                            { level: 2, text: "Basic data hygiene with periodic cleanup" },
+                            { level: 3, text: "Defined data ownership, privacy compliance, quality standards" },
+                            { level: 4, text: "Automated data quality monitoring with AI-powered enrichment" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Campaign Management",
+                icon: "🚀",
+                questions: [
+                    {
+                        text: "How do you plan and execute marketing campaigns?",
+                        options: [
+                            { level: 1, text: "Ad-hoc campaigns with manual coordination via email/spreadsheets" },
+                            { level: 2, text: "Campaign calendar with basic project management" },
+                            { level: 3, text: "Integrated campaign management platform with workflows" },
+                            { level: 4, text: "Agile campaign sprints with real-time optimization and AI insights" }
+                        ]
+                    },
+                    {
+                        text: "How sophisticated is your audience segmentation?",
+                        options: [
+                            { level: 1, text: "Basic demographic segments or batch-and-blast approach" },
+                            { level: 2, text: "Behavioral segments based on past interactions" },
+                            { level: 3, text: "Dynamic segments with predictive propensity scores" },
+                            { level: 4, text: "AI-driven micro-segments with real-time personalization" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage multi-channel campaign orchestration?",
+                        options: [
+                            { level: 1, text: "Single-channel focus, channels managed separately" },
+                            { level: 2, text: "Multi-channel but siloed execution and measurement" },
+                            { level: 3, text: "Integrated cross-channel journeys with unified measurement" },
+                            { level: 4, text: "Omnichannel orchestration with real-time channel optimization" }
+                        ]
+                    },
+                    {
+                        text: "What is your A/B testing and experimentation maturity?",
+                        options: [
+                            { level: 1, text: "Rarely test, rely on intuition and past practice" },
+                            { level: 2, text: "Occasional A/B tests on emails and landing pages" },
+                            { level: 3, text: "Systematic testing program with clear methodology" },
+                            { level: 4, text: "Continuous experimentation culture with multi-armed bandits and AI" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Content & Creative Operations",
+                icon: "🎨",
+                questions: [
+                    {
+                        text: "How do you manage content creation and production?",
+                        options: [
+                            { level: 1, text: "Ad-hoc content creation with no centralized process" },
+                            { level: 2, text: "Content calendar with basic approval workflows" },
+                            { level: 3, text: "Content operations platform with asset management" },
+                            { level: 4, text: "AI-assisted content creation with automated optimization" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your digital asset management?",
+                        options: [
+                            { level: 1, text: "Assets scattered across drives, hard to find" },
+                            { level: 2, text: "Basic file storage with folder structure" },
+                            { level: 3, text: "DAM platform with metadata, search, and permissions" },
+                            { level: 4, text: "AI-powered DAM with auto-tagging, rights management, and insights" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach content personalization?",
+                        options: [
+                            { level: 1, text: "One-size-fits-all content for all audiences" },
+                            { level: 2, text: "Basic personalization (name, company) in emails" },
+                            { level: 3, text: "Dynamic content based on segment and behavior" },
+                            { level: 4, text: "Real-time content personalization with AI recommendations" }
+                        ]
+                    },
+                    {
+                        text: "What is your creative production turnaround capability?",
+                        options: [
+                            { level: 1, text: "Weeks for simple assets, bottlenecks common" },
+                            { level: 2, text: "Defined SLAs but still slow for complex requests" },
+                            { level: 3, text: "Rapid iteration with templates and modular design" },
+                            { level: 4, text: "Real-time creative generation with AI and self-service tools" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Performance & Analytics",
+                icon: "📊",
+                questions: [
+                    {
+                        text: "How do you measure marketing performance?",
+                        options: [
+                            { level: 1, text: "Basic vanity metrics (opens, clicks) in spreadsheets" },
+                            { level: 2, text: "Channel-specific dashboards with limited integration" },
+                            { level: 3, text: "Unified marketing dashboard with attribution modeling" },
+                            { level: 4, text: "Real-time performance analytics with predictive insights" }
+                        ]
+                    },
+                    {
+                        text: "What is your marketing attribution approach?",
+                        options: [
+                            { level: 1, text: "Last-click or no formal attribution" },
+                            { level: 2, text: "Basic multi-touch attribution model" },
+                            { level: 3, text: "Data-driven attribution with marketing mix modeling" },
+                            { level: 4, text: "Unified measurement with incrementality testing and AI" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your marketing reporting and insights capability?",
+                        options: [
+                            { level: 1, text: "Manual report creation, often delayed and inconsistent" },
+                            { level: 2, text: "Regular scheduled reports with basic visualization" },
+                            { level: 3, text: "Self-service BI with automated insights" },
+                            { level: 4, text: "AI-generated insights with anomaly detection and recommendations" }
+                        ]
+                    },
+                    {
+                        text: "How do you use data to drive marketing decisions?",
+                        options: [
+                            { level: 1, text: "Gut feel and HiPPO (Highest Paid Person's Opinion)" },
+                            { level: 2, text: "Review performance data but decisions often intuitive" },
+                            { level: 3, text: "Data-informed decision making with regular analysis" },
+                            { level: 4, text: "Predictive analytics driving proactive optimization" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Maturity Level Definitions
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive marketing ops with significant improvement opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Foundational marketing capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive marketing operations delivering strong business value" },
+            4: { name: "Leading", color: "level-4", description: "World-class marketing ops driving competitive advantage" }
+        };
+
+        // Recommendations by category and level gap
+        const recommendations = {
+            "Marketing Strategy & Governance": {
+                low: "Formalize marketing-sales alignment with shared KPIs and regular syncs",
+                medium: "Establish clear operating model with defined roles and governance",
+                high: "Implement agile marketing framework with cross-functional pods"
+            },
+            "Marketing Technology & Data": {
+                low: "Audit martech stack and create integration roadmap",
+                medium: "Implement Customer Data Platform for unified customer view",
+                high: "Modernize to composable architecture with real-time orchestration"
+            },
+            "Campaign Management": {
+                low: "Establish testing culture with systematic A/B experimentation",
+                medium: "Implement cross-channel journey orchestration",
+                high: "Deploy AI-driven campaign optimization and personalization"
+            },
+            "Content & Creative Operations": {
+                low: "Implement DAM and content operations platform",
+                medium: "Build modular content system with personalization",
+                high: "Deploy AI-assisted content creation and optimization"
+            },
+            "Performance & Analytics": {
+                low: "Build unified marketing dashboard with proper attribution",
+                medium: "Implement marketing mix modeling and incrementality testing",
+                high: "Deploy predictive analytics with AI-generated insights"
+            }
+        };
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-pink-500 ${savedAnswer === option.level ? 'border-pink-500 bg-pink-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-pink-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = {};
+            
+            categories.forEach((category, catIndex) => {
+                let totalScore = 0;
+                category.questions.forEach((_, qIndex) => {
+                    const key = `${catIndex}-${qIndex}`;
+                    totalScore += answers[key] || 1;
+                });
+                categoryScores[category.name] = totalScore / category.questions.length;
+            });
+
+            const overallScore = Object.values(categoryScores).reduce((a, b) => a + b, 0) / categories.length;
+
+            return { categoryScores, overallScore };
+        }
+
+        function getLevel(score) {
+            if (score >= 3.5) return 4;
+            if (score >= 2.5) return 3;
+            if (score >= 1.5) return 2;
+            return 1;
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore } = calculateResults();
+            const overallLevel = getLevel(overallScore);
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { 
+                day: 'numeric', month: 'long', year: 'numeric' 
+            });
+
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = maturityLevels[overallLevel].name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${maturityLevels[overallLevel].color}`;
+            document.getElementById('overall-description').textContent = maturityLevels[overallLevel].description;
+
+            // Category breakdown
+            const categoryResults = document.getElementById('category-results');
+            categoryResults.innerHTML = Object.entries(categoryScores).map(([name, score]) => {
+                const level = getLevel(score);
+                const category = categories.find(c => c.name === name);
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${category.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${name}</span>
+                                <span class="text-slate-400">${score.toFixed(1)} - ${maturityLevels[level].name}</span>
+                            </div>
+                            <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${maturityLevels[level].color} h-full transition-all duration-500" style="width: ${(score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Gap analysis
+            const gapAnalysis = document.getElementById('gap-analysis');
+            const sortedGaps = Object.entries(categoryScores)
+                .map(([name, score]) => ({ name, gap: 4 - score }))
+                .sort((a, b) => b.gap - a.gap);
+
+            gapAnalysis.innerHTML = sortedGaps.map(({ name, gap }) => {
+                const category = categories.find(c => c.name === name);
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${category.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${name}</span>
+                                <span class="text-slate-400">${gap.toFixed(1)} points to world-class</span>
+                            </div>
+                            <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500 h-full" style="width: ${(gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Recommendations
+            const recsContainer = document.getElementById('recommendations');
+            const topGaps = sortedGaps.slice(0, 3);
+            recsContainer.innerHTML = topGaps.map(({ name, gap }, index) => {
+                const recLevel = gap > 2 ? 'high' : gap > 1 ? 'medium' : 'low';
+                const rec = recommendations[name][recLevel];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-pink-500 text-sm font-semibold">${index + 1}</span>
+                            <div>
+                                <h4 class="font-semibold mb-1">${name}</h4>
+                                <p class="text-slate-300">${rec}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'marketing-ops-maturity-assessment.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
