@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — Legal Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">⚖️</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Legal Operations Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your legal function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key legal operations capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class legal operations benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance</a> · 
+                <a href="hr-assessment.html" class="hover:text-slate-300">HR</a> · 
+                <a href="procurement-assessment.html" class="hover:text-slate-300">Procurement</a> · 
+                <a href="it-assessment.html" class="hover:text-slate-300">IT</a> · 
+                <a href="cs-assessment.html" class="hover:text-slate-300">Customer Service</a> · 
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-amber-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-amber-400 uppercase tracking-wide">Contract Management</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your Legal Operations Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <!-- Overall Score -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Gap Analysis -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                    <a href="assessment.html" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+                        📊 Try Finance Assessment
+                    </a>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-12 text-slate-500">
+                    <p>Powered by <a href="index.html" class="text-amber-400 hover:text-amber-300">MaturityScore.io</a></p>
+                    <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-amber-400 hover:text-amber-300">minihello@agentmail.to</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Legal Operations Assessment Categories & Questions
+        const categories = [
+            {
+                name: "Contract Management",
+                icon: "📝",
+                questions: [
+                    {
+                        text: "How do you manage the contract lifecycle?",
+                        options: [
+                            { level: 1, text: "Contracts stored in email/shared drives, no central repository" },
+                            { level: 2, text: "Basic document management with manual tracking in spreadsheets" },
+                            { level: 3, text: "CLM platform with workflow automation and milestone tracking" },
+                            { level: 4, text: "AI-powered CLM with auto-extraction, risk scoring, and predictive renewal" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your contract template and playbook library?",
+                        options: [
+                            { level: 1, text: "No standard templates, each contract negotiated from scratch" },
+                            { level: 2, text: "Basic templates exist but inconsistently used" },
+                            { level: 3, text: "Approved template library with fallback positions and playbooks" },
+                            { level: 4, text: "Dynamic templates with clause libraries and auto-assembly based on deal type" }
+                        ]
+                    },
+                    {
+                        text: "How do you track contract obligations and renewals?",
+                        options: [
+                            { level: 1, text: "No systematic tracking, obligations often missed" },
+                            { level: 2, text: "Calendar reminders for key dates, manual monitoring" },
+                            { level: 3, text: "Automated alerts with obligation register and compliance tracking" },
+                            { level: 4, text: "AI-monitored obligations with proactive compliance and auto-renewal management" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle contract review and negotiation?",
+                        options: [
+                            { level: 1, text: "All contracts reviewed by lawyers, no self-service" },
+                            { level: 2, text: "Some low-risk contracts approved by business with basic guidelines" },
+                            { level: 3, text: "Risk-tiered intake with self-service for standard contracts" },
+                            { level: 4, text: "AI-assisted review with auto-redlining and negotiation recommendations" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Legal Service Delivery",
+                icon: "🎯",
+                questions: [
+                    {
+                        text: "How does the business request legal support?",
+                        options: [
+                            { level: 1, text: "Ad-hoc requests via email, phone, or hallway conversations" },
+                            { level: 2, text: "Shared inbox or forms with basic categorization" },
+                            { level: 3, text: "Intake portal with auto-triage and SLA tracking" },
+                            { level: 4, text: "AI-powered intake with smart routing and self-service resolution" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage legal matters and workload?",
+                        options: [
+                            { level: 1, text: "No central tracking, matters live in individual email/files" },
+                            { level: 2, text: "Spreadsheet tracking with periodic status updates" },
+                            { level: 3, text: "Matter management system with workflow and resource tracking" },
+                            { level: 4, text: "Integrated legal workspace with predictive capacity and auto-assignment" }
+                        ]
+                    },
+                    {
+                        text: "How do you measure legal team performance and value?",
+                        options: [
+                            { level: 1, text: "No metrics tracked, value assumed not measured" },
+                            { level: 2, text: "Basic activity metrics (matters closed, hours logged)" },
+                            { level: 3, text: "KPIs including turnaround time, client satisfaction, spend" },
+                            { level: 4, text: "Business outcome metrics with value attribution and benchmarking" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle legal project management?",
+                        options: [
+                            { level: 1, text: "No formal project management approach" },
+                            { level: 2, text: "Some complex matters have project plans" },
+                            { level: 3, text: "Legal project management discipline with budgets and milestones" },
+                            { level: 4, text: "LPM center of excellence with predictive analytics and continuous optimization" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Legal Technology & Data",
+                icon: "💻",
+                questions: [
+                    {
+                        text: "What is your legal technology stack?",
+                        options: [
+                            { level: 1, text: "Office tools only (Word, Excel, email)" },
+                            { level: 2, text: "Point solutions (e-billing, basic DMS)" },
+                            { level: 3, text: "Integrated legal tech stack with APIs and workflows" },
+                            { level: 4, text: "AI-enabled platform with automation and enterprise integration" }
+                        ]
+                    },
+                    {
+                        text: "How do you leverage legal analytics?",
+                        options: [
+                            { level: 1, text: "No legal data analytics capability" },
+                            { level: 2, text: "Basic reporting (spend, matter counts)" },
+                            { level: 3, text: "Dashboards with trend analysis and benchmarking" },
+                            { level: 4, text: "Predictive analytics for outcomes, costs, and resource needs" }
+                        ]
+                    },
+                    {
+                        text: "How mature is your legal knowledge management?",
+                        options: [
+                            { level: 1, text: "Tribal knowledge, no central repository" },
+                            { level: 2, text: "Basic document repository with folder structure" },
+                            { level: 3, text: "Searchable knowledge base with templates, precedents, and FAQs" },
+                            { level: 4, text: "AI-powered knowledge with auto-tagging and contextual recommendations" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach legal process automation?",
+                        options: [
+                            { level: 1, text: "All processes manual" },
+                            { level: 2, text: "Some email templates and basic automation" },
+                            { level: 3, text: "Workflow automation for intake, approvals, and notifications" },
+                            { level: 4, text: "End-to-end automation with AI document generation and decisioning" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Compliance & Risk",
+                icon: "🛡️",
+                questions: [
+                    {
+                        text: "How do you track regulatory changes and obligations?",
+                        options: [
+                            { level: 1, text: "Reactive, learn about changes when issues arise" },
+                            { level: 2, text: "Manual monitoring with periodic updates" },
+                            { level: 3, text: "Regulatory intelligence platform with alerts and impact assessment" },
+                            { level: 4, text: "AI-powered horizon scanning with auto-mapped compliance requirements" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage policies and procedures?",
+                        options: [
+                            { level: 1, text: "Policies scattered, unclear ownership, often outdated" },
+                            { level: 2, text: "Central policy repository with periodic review cycles" },
+                            { level: 3, text: "Policy management system with version control and attestation" },
+                            { level: 4, text: "Dynamic policy platform with real-time updates and compliance testing" }
+                        ]
+                    },
+                    {
+                        text: "How do you assess and manage legal risk?",
+                        options: [
+                            { level: 1, text: "Risk assessment done ad-hoc, no systematic approach" },
+                            { level: 2, text: "Risk register maintained with annual reviews" },
+                            { level: 3, text: "Integrated risk framework with quantification and monitoring" },
+                            { level: 4, text: "Real-time risk intelligence with predictive modeling and scenario analysis" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle ethics and compliance training?",
+                        options: [
+                            { level: 1, text: "No formal compliance training program" },
+                            { level: 2, text: "Annual compliance training, generic content" },
+                            { level: 3, text: "Role-based training with assessments and certification tracking" },
+                            { level: 4, text: "Personalized learning with micro-learning and real-time compliance nudges" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Outside Counsel & Vendors",
+                icon: "🤝",
+                questions: [
+                    {
+                        text: "How do you manage your law firm panel?",
+                        options: [
+                            { level: 1, text: "No formal panel, firms selected ad-hoc by relationship" },
+                            { level: 2, text: "Preferred firm list with periodic RFPs" },
+                            { level: 3, text: "Managed panel with performance metrics and matter allocation rules" },
+                            { level: 4, text: "Strategic partnerships with aligned incentives and outcome-based fees" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage outside counsel spend?",
+                        options: [
+                            { level: 1, text: "Invoices paid without detailed review" },
+                            { level: 2, text: "Manual invoice review against budgets" },
+                            { level: 3, text: "E-billing with guidelines enforcement and spend analytics" },
+                            { level: 4, text: "AI-powered invoice review with predictive spend and value analysis" }
+                        ]
+                    },
+                    {
+                        text: "How do you use alternative legal service providers (ALSPs)?",
+                        options: [
+                            { level: 1, text: "Not used or considered" },
+                            { level: 2, text: "Occasional use for specific tasks (doc review, discovery)" },
+                            { level: 3, text: "Strategic ALSP relationships for defined work categories" },
+                            { level: 4, text: "Integrated delivery model with optimal sourcing by work type" }
+                        ]
+                    },
+                    {
+                        text: "How do you evaluate and develop outside counsel?",
+                        options: [
+                            { level: 1, text: "No formal evaluation process" },
+                            { level: 2, text: "Informal feedback, relationship-based retention" },
+                            { level: 3, text: "Structured scorecards with annual reviews and development plans" },
+                            { level: 4, text: "Continuous performance management with benchmarking and co-innovation" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Maturity Level Definitions
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive legal function with significant improvement opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Basic legal operations capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive legal function delivering strong business outcomes" },
+            4: { name: "Leading", color: "level-4", description: "World-class legal operations driving strategic value" }
+        };
+
+        // Recommendations by category and level gap
+        const recommendations = {
+            "Contract Management": {
+                low: "Deploy AI-powered contract analytics and auto-assembly",
+                medium: "Implement CLM platform with workflow automation",
+                high: "Establish central contract repository and standard templates"
+            },
+            "Legal Service Delivery": {
+                low: "Build predictive capacity management and outcome metrics",
+                medium: "Deploy matter management with intake portal and SLAs",
+                high: "Centralize request intake and implement basic tracking"
+            },
+            "Legal Technology & Data": {
+                low: "Implement AI-powered automation and predictive analytics",
+                medium: "Integrate legal tech stack with enterprise systems",
+                high: "Deploy foundational legal tech (e-billing, DMS)"
+            },
+            "Compliance & Risk": {
+                low: "Build real-time risk intelligence with predictive modeling",
+                medium: "Implement regulatory tracking and policy management system",
+                high: "Establish risk register and compliance training program"
+            },
+            "Outside Counsel & Vendors": {
+                low: "Optimize delivery model with AI-powered spend analytics",
+                medium: "Implement e-billing and structured performance management",
+                high: "Establish formal panel and basic spend tracking"
+            }
+        };
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-amber-500 ${savedAnswer === option.level ? 'border-amber-500 bg-amber-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-amber-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return { name: category.name, icon: category.icon, score: avg };
+            });
+
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            const overallLevel = Math.round(overallScore);
+
+            return { categoryScores, overallScore, overallLevel };
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore, overallLevel } = calculateResults();
+            const levelInfo = maturityLevels[overallLevel];
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = levelInfo.name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${levelInfo.color}`;
+            document.getElementById('overall-description').textContent = levelInfo.description;
+
+            // Category breakdown
+            document.getElementById('category-results').innerHTML = categoryScores.map(cat => {
+                const level = Math.round(cat.score);
+                const levelInfo = maturityLevels[level];
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-slate-400">${cat.score.toFixed(1)} — ${levelInfo.name}</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${levelInfo.color} h-full transition-all duration-500" style="width: ${(cat.score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Gap analysis
+            document.getElementById('gap-analysis').innerHTML = categoryScores
+                .map(cat => ({ ...cat, gap: 4 - cat.score }))
+                .sort((a, b) => b.gap - a.gap)
+                .map(cat => `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-red-400">Gap: ${cat.gap.toFixed(1)} levels</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500/50 h-full" style="width: ${(cat.gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Recommendations
+            const sortedCategories = [...categoryScores].sort((a, b) => a.score - b.score);
+            document.getElementById('recommendations').innerHTML = sortedCategories.slice(0, 3).map((cat, index) => {
+                const gap = 4 - cat.score;
+                const priority = gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low';
+                const rec = recommendations[cat.name][priority];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">${cat.icon}</span>
+                            <span class="font-semibold">${cat.name}</span>
+                            <span class="ml-auto text-sm px-2 py-1 rounded ${index === 0 ? 'bg-red-500/20 text-red-400' : index === 1 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                Priority ${index + 1}
+                            </span>
+                        </div>
+                        <p class="text-slate-300">${rec}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'Legal-Operations-Maturity-Assessment-Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
