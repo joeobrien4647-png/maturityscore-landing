@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — Finance Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">📊</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Finance Operations Maturity Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your finance function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-blue-400 uppercase tracking-wide">Process Efficiency</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                
+                <!-- Answer Options -->
+                <div id="answer-options" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <!-- Populated by JS -->
+            </div>
+            <div class="flex gap-4 justify-center mt-8 mb-12">
+                <button onclick="downloadPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                    📄 Download PDF Report
+                </button>
+                <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                    🔄 Start Over
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Assessment Questions - Finance Operations Maturity Model
+        const categories = [
+            {
+                name: "Process Efficiency",
+                icon: "⚙️",
+                questions: [
+                    {
+                        text: "How standardized are your core finance processes (P2P, O2C, R2R)?",
+                        options: [
+                            { level: 1, text: "Processes vary significantly across business units with no documentation" },
+                            { level: 2, text: "Some processes are documented but inconsistently applied" },
+                            { level: 3, text: "Standardized processes across most business units with regular reviews" },
+                            { level: 4, text: "Fully standardized, continuously improved processes with real-time monitoring" }
+                        ]
+                    },
+                    {
+                        text: "What level of automation exists in your transactional finance processes?",
+                        options: [
+                            { level: 1, text: "Mostly manual with heavy reliance on spreadsheets" },
+                            { level: 2, text: "Some basic automation (e.g., scheduled reports, simple macros)" },
+                            { level: 3, text: "Significant automation with RPA for repetitive tasks" },
+                            { level: 4, text: "End-to-end automation with AI/ML for exception handling" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle exceptions in your finance processes?",
+                        options: [
+                            { level: 1, text: "Ad-hoc handling, often requiring significant manual intervention" },
+                            { level: 2, text: "Basic exception queues but manual resolution" },
+                            { level: 3, text: "Structured exception workflows with escalation paths" },
+                            { level: 4, text: "Intelligent exception handling with predictive resolution" }
+                        ]
+                    },
+                    {
+                        text: "What is your average days to close the monthly books?",
+                        options: [
+                            { level: 1, text: "More than 10 working days" },
+                            { level: 2, text: "6-10 working days" },
+                            { level: 3, text: "3-5 working days" },
+                            { level: 4, text: "Less than 3 working days (continuous close)" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Technology & Data",
+                icon: "💻",
+                questions: [
+                    {
+                        text: "How would you describe your finance technology landscape?",
+                        options: [
+                            { level: 1, text: "Fragmented legacy systems with limited integration" },
+                            { level: 2, text: "Core ERP with bolt-on solutions and some integration" },
+                            { level: 3, text: "Integrated cloud-based platform with strong master data" },
+                            { level: 4, text: "Unified digital platform with real-time analytics and AI capabilities" }
+                        ]
+                    },
+                    {
+                        text: "How accessible and trustworthy is your finance data?",
+                        options: [
+                            { level: 1, text: "Data silos, frequent reconciliation issues, low trust in numbers" },
+                            { level: 2, text: "Single source of truth for some data, manual reconciliation needed" },
+                            { level: 3, text: "Strong data governance, automated reconciliation, high data quality" },
+                            { level: 4, text: "Real-time data lake with self-service analytics and full lineage" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to financial reporting and analytics?",
+                        options: [
+                            { level: 1, text: "Static reports, mostly backward-looking, heavy Excel use" },
+                            { level: 2, text: "Standard reports with some ad-hoc analysis capability" },
+                            { level: 3, text: "Interactive dashboards with drill-down and scenario modeling" },
+                            { level: 4, text: "Predictive analytics with AI-driven insights and recommendations" }
+                        ]
+                    },
+                    {
+                        text: "How do you leverage AI/ML in finance operations?",
+                        options: [
+                            { level: 1, text: "No AI/ML usage" },
+                            { level: 2, text: "Exploring use cases, maybe a pilot or two" },
+                            { level: 3, text: "AI deployed in specific areas (e.g., forecasting, matching)" },
+                            { level: 4, text: "Pervasive AI across finance with continuous learning models" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "People & Organization",
+                icon: "👥",
+                questions: [
+                    {
+                        text: "How is your finance function organized?",
+                        options: [
+                            { level: 1, text: "Decentralized, embedded in business units with limited coordination" },
+                            { level: 2, text: "Hybrid model with some shared services" },
+                            { level: 3, text: "Centralized shared services with clear governance" },
+                            { level: 4, text: "Global Business Services with integrated end-to-end delivery" }
+                        ]
+                    },
+                    {
+                        text: "What is the skill profile of your finance team?",
+                        options: [
+                            { level: 1, text: "Primarily transactional/processing skills" },
+                            { level: 2, text: "Mix of transactional and some analytical capabilities" },
+                            { level: 3, text: "Strong analytical skills with business partnering focus" },
+                            { level: 4, text: "Data scientists, automation experts, and strategic advisors" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach talent development in finance?",
+                        options: [
+                            { level: 1, text: "Limited training, mainly on-the-job learning" },
+                            { level: 2, text: "Standard training programs, some rotation opportunities" },
+                            { level: 3, text: "Structured development paths with digital upskilling" },
+                            { level: 4, text: "Continuous learning culture with AI-powered skill development" }
+                        ]
+                    },
+                    {
+                        text: "What percentage of finance time is spent on value-added activities vs. transactional work?",
+                        options: [
+                            { level: 1, text: "Less than 20% on value-added activities" },
+                            { level: 2, text: "20-40% on value-added activities" },
+                            { level: 3, text: "40-60% on value-added activities" },
+                            { level: 4, text: "More than 60% on value-added activities" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Governance & Control",
+                icon: "🛡️",
+                questions: [
+                    {
+                        text: "How mature is your internal controls framework?",
+                        options: [
+                            { level: 1, text: "Reactive controls, audit findings drive improvements" },
+                            { level: 2, text: "Documented controls but manual testing" },
+                            { level: 3, text: "Risk-based controls with continuous monitoring" },
+                            { level: 4, text: "Automated controls with real-time assurance and AI anomaly detection" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage compliance and regulatory requirements?",
+                        options: [
+                            { level: 1, text: "Reactive, scramble for each new requirement" },
+                            { level: 2, text: "Tracking system in place but manual compliance processes" },
+                            { level: 3, text: "Proactive monitoring with automated compliance workflows" },
+                            { level: 4, text: "Regulatory technology (RegTech) with predictive compliance" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to policy management?",
+                        options: [
+                            { level: 1, text: "Policies exist but are outdated or not consistently enforced" },
+                            { level: 2, text: "Documented policies with periodic review" },
+                            { level: 3, text: "Centralized policy management with clear ownership" },
+                            { level: 4, text: "Dynamic policies embedded in systems with automated enforcement" }
+                        ]
+                    },
+                    {
+                        text: "How effective is your segregation of duties?",
+                        options: [
+                            { level: 1, text: "Limited SoD, relies on trust and manual oversight" },
+                            { level: 2, text: "SoD defined but not systematically enforced" },
+                            { level: 3, text: "System-enforced SoD with regular access reviews" },
+                            { level: 4, text: "Dynamic SoD with real-time conflict detection and resolution" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Business Partnership",
+                icon: "🤝",
+                questions: [
+                    {
+                        text: "How does finance engage with the business?",
+                        options: [
+                            { level: 1, text: "Transaction processor, limited business interaction" },
+                            { level: 2, text: "Report provider with some ad-hoc analysis" },
+                            { level: 3, text: "Proactive business partner with regular engagement" },
+                            { level: 4, text: "Strategic advisor embedded in business decisions" }
+                        ]
+                    },
+                    {
+                        text: "How would you rate the quality of your financial planning and forecasting?",
+                        options: [
+                            { level: 1, text: "Annual budget, infrequent updates, low accuracy" },
+                            { level: 2, text: "Quarterly forecasts with moderate accuracy" },
+                            { level: 3, text: "Monthly rolling forecasts with driver-based planning" },
+                            { level: 4, text: "Continuous planning with AI-powered forecasting and scenario modeling" }
+                        ]
+                    },
+                    {
+                        text: "How do you measure and communicate finance function performance?",
+                        options: [
+                            { level: 1, text: "Limited metrics, no formal performance tracking" },
+                            { level: 2, text: "Basic KPIs tracked periodically" },
+                            { level: 3, text: "Comprehensive SLAs and KPIs with regular business reviews" },
+                            { level: 4, text: "Real-time performance dashboards with predictive indicators" }
+                        ]
+                    },
+                    {
+                        text: "How does finance contribute to strategic decision-making?",
+                        options: [
+                            { level: 1, text: "Rarely involved, provides data when asked" },
+                            { level: 2, text: "Involved in major decisions, primarily financial analysis" },
+                            { level: 3, text: "Regular seat at the table, influences strategy" },
+                            { level: 4, text: "Co-leads strategic initiatives with business, drives value creation" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // State
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            // Update progress
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            // Update question
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            // Update options
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-blue-500 ${savedAnswer === option.level ? 'border-blue-500 bg-blue-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-blue-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            // Update navigation
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            // Animate
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateScores() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return {
+                    name: category.name,
+                    icon: category.icon,
+                    score: avg,
+                    scores: scores
+                };
+            });
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            return { categoryScores, overallScore };
+        }
+
+        function getMaturityLevel(score) {
+            if (score < 1.5) return { level: 1, name: "Lagging", color: "level-1", description: "Significant gaps exist. Immediate attention required." };
+            if (score < 2.5) return { level: 2, name: "Developing", color: "level-2", description: "Foundation in place but inconsistent execution." };
+            if (score < 3.5) return { level: 3, name: "Advanced", color: "level-3", description: "Strong capabilities with room for optimization." };
+            return { level: 4, name: "Leading", color: "level-4", description: "World-class performance. Focus on maintaining excellence." };
+        }
+
+        function getRecommendations(categoryScores) {
+            const recommendations = {
+                "Process Efficiency": [
+                    "Document and standardize core processes across all business units",
+                    "Implement RPA for high-volume transactional processes",
+                    "Establish a process excellence team with continuous improvement mandate",
+                    "Target 5-day close through process optimization and automation"
+                ],
+                "Technology & Data": [
+                    "Develop a finance technology roadmap aligned with business strategy",
+                    "Establish data governance framework with clear ownership",
+                    "Invest in self-service analytics capabilities",
+                    "Pilot AI/ML use cases in forecasting and anomaly detection"
+                ],
+                "People & Organization": [
+                    "Assess current skills against future-state requirements",
+                    "Develop structured upskilling program for digital capabilities",
+                    "Increase shared services scope to free up business partnering capacity",
+                    "Establish clear career paths for finance talent"
+                ],
+                "Governance & Control": [
+                    "Implement continuous controls monitoring",
+                    "Automate compliance tracking and reporting",
+                    "Conduct regular access reviews and SoD assessments",
+                    "Invest in RegTech for proactive compliance"
+                ],
+                "Business Partnership": [
+                    "Embed FP&A resources closer to business units",
+                    "Implement driver-based rolling forecasts",
+                    "Develop business-facing dashboards with actionable insights",
+                    "Create regular business review cadence with clear value metrics"
+                ]
+            };
+
+            // Sort by lowest score first (biggest gaps)
+            const sorted = [...categoryScores].sort((a, b) => a.score - b.score);
+            return sorted.slice(0, 3).map(cat => ({
+                category: cat.name,
+                icon: cat.icon,
+                score: cat.score,
+                actions: recommendations[cat.name].slice(0, 3)
+            }));
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore } = calculateScores();
+            const maturity = getMaturityLevel(overallScore);
+            const recommendations = getRecommendations(categoryScores);
+
+            const resultsHtml = `
+                <div class="text-center mb-12">
+                    <h1 class="text-3xl font-bold mb-4">Your Finance Operations Maturity Score</h1>
+                    <div class="inline-block ${maturity.color} rounded-2xl p-8 mb-4">
+                        <div class="text-6xl font-bold mb-2">${overallScore.toFixed(1)}</div>
+                        <div class="text-2xl font-semibold">${maturity.name}</div>
+                    </div>
+                    <p class="text-xl text-slate-300 max-w-2xl mx-auto">${maturity.description}</p>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Score by Category</h2>
+                    <div class="space-y-4">
+                        ${categoryScores.map(cat => {
+                            const catMaturity = getMaturityLevel(cat.score);
+                            return `
+                                <div class="flex items-center gap-4">
+                                    <span class="text-2xl w-10">${cat.icon}</span>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between mb-1">
+                                            <span class="font-medium">${cat.name}</span>
+                                            <span class="text-slate-400">${cat.score.toFixed(1)} — ${catMaturity.name}</span>
+                                        </div>
+                                        <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="${catMaturity.color} h-full rounded-full transition-all" style="width: ${(cat.score / 4) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">🎯 Priority Recommendations</h2>
+                    <p class="text-slate-400 mb-6">Based on your biggest capability gaps:</p>
+                    <div class="space-y-6">
+                        ${recommendations.map((rec, i) => `
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-xl">${rec.icon}</span>
+                                    <span class="font-semibold">${rec.category}</span>
+                                    <span class="text-sm text-slate-400">(Score: ${rec.score.toFixed(1)})</span>
+                                </div>
+                                <ul class="space-y-2 text-slate-300">
+                                    ${rec.actions.map(action => `<li class="flex items-start gap-2"><span class="text-blue-400">→</span> ${action}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
+                    <h2 class="text-xl font-semibold mb-4">📈 What's Next?</h2>
+                    <p class="text-slate-300 mb-4">
+                        This assessment provides a starting point. For a deeper dive including:
+                    </p>
+                    <ul class="space-y-2 text-slate-300 mb-6">
+                        <li>• Detailed benchmarking against industry peers</li>
+                        <li>• Customized transformation roadmap</li>
+                        <li>• Business case for improvement initiatives</li>
+                    </ul>
+                    <a href="mailto:minihello@agentmail.to?subject=MaturityScore%20Deep%20Dive" 
+                       class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                        Get in Touch →
+                    </a>
+                </div>
+            `;
+
+            document.getElementById('results-content').innerHTML = resultsHtml;
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'MaturityScore-Finance-Assessment.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
