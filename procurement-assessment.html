@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaturityScore.io — Procurement Operations Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .level-1 { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .level-2 { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .level-3 { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .level-4 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl text-center">
+            <div class="mb-8">
+                <span class="text-5xl">🛒</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Procurement Operations Maturity Assessment</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Discover where your procurement function stands on the maturity curve — and exactly what to do next.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-8 text-left">
+                <h3 class="font-semibold mb-4 text-lg">What you'll get:</h3>
+                <ul class="space-y-3 text-slate-300">
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Your maturity score across 5 key procurement capability areas</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Gap analysis vs. world-class procurement benchmarks</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Prioritized recommendations for improvement</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-green-400">✓</span>
+                        <span>Downloadable PDF report</span>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-400 mb-6">⏱️ Takes about 5-10 minutes</p>
+            <button onclick="startAssessment()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 px-8 rounded-lg text-lg transition-all hover:scale-105">
+                Start Assessment →
+            </button>
+            <p class="text-slate-500 text-sm mt-6">
+                <a href="assessment.html" class="hover:text-slate-300">Finance Assessment</a> · 
+                <a href="hr-assessment.html" class="hover:text-slate-300">HR Assessment</a> ·
+                <a href="index.html" class="hover:text-slate-300">Home</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Assessment Screen -->
+    <div id="assessment-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="mb-8">
+                <div class="flex justify-between text-sm text-slate-400 mb-2">
+                    <span id="progress-category">Category 1 of 5</span>
+                    <span id="progress-question">Question 1 of 20</span>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 5%"></div>
+                </div>
+            </div>
+
+            <div id="question-card" class="bg-slate-800 rounded-xl p-8 fade-in">
+                <div class="mb-2">
+                    <span id="category-badge" class="text-sm font-medium text-emerald-400 uppercase tracking-wide">Sourcing & Category Management</span>
+                </div>
+                <h2 id="question-text" class="text-2xl font-semibold mb-8">Loading question...</h2>
+                <div id="answer-options" class="space-y-3"></div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button id="prev-btn" onclick="prevQuestion()" class="text-slate-400 hover:text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    ← Previous
+                </button>
+                <button id="next-btn" onclick="nextQuestion()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors disabled:opacity-50" disabled>
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="hidden min-h-screen p-6">
+        <div class="max-w-4xl mx-auto">
+            <div id="results-content">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold mb-4">Your Procurement Maturity Results</h1>
+                    <p class="text-slate-400">Assessment completed on <span id="result-date"></span></p>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-8 mb-8 text-center">
+                    <h2 class="text-xl text-slate-400 mb-4">Overall Maturity Score</h2>
+                    <div id="overall-score" class="text-7xl font-bold mb-4">0.0</div>
+                    <div id="overall-level" class="inline-block px-4 py-2 rounded-full text-lg font-semibold">Level</div>
+                    <p id="overall-description" class="text-slate-400 mt-4 max-w-xl mx-auto"></p>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Category Breakdown</h2>
+                    <div id="category-results" class="space-y-4"></div>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Gap Analysis</h2>
+                    <p class="text-slate-400 mb-6">Distance from world-class (Level 4) by category</p>
+                    <div id="gap-analysis" class="space-y-4"></div>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-8 mb-8">
+                    <h2 class="text-xl font-semibold mb-6">Priority Recommendations</h2>
+                    <div id="recommendations" class="space-y-4"></div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        📄 Download PDF Report
+                    </button>
+                    <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                        🔄 Retake Assessment
+                    </button>
+                    <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
+                        📊 Try Other Assessments
+                    </a>
+                </div>
+
+                <div class="text-center mt-12 text-slate-500">
+                    <p>Powered by <a href="index.html" class="text-emerald-400 hover:text-emerald-300">MaturityScore.io</a></p>
+                    <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-emerald-400 hover:text-emerald-300">minihello@agentmail.to</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            {
+                name: "Sourcing & Category Management",
+                icon: "📊",
+                questions: [
+                    {
+                        text: "How sophisticated is your category management approach?",
+                        options: [
+                            { level: 1, text: "No formal category management, buying is ad-hoc" },
+                            { level: 2, text: "Basic category segmentation with some strategic sourcing" },
+                            { level: 3, text: "Comprehensive category strategies with market intelligence" },
+                            { level: 4, text: "Advanced category management with predictive analytics and innovation focus" }
+                        ]
+                    },
+                    {
+                        text: "How do you approach strategic sourcing?",
+                        options: [
+                            { level: 1, text: "Reactive purchasing based on immediate needs" },
+                            { level: 2, text: "Some competitive bidding for major purchases" },
+                            { level: 3, text: "Structured sourcing process with total cost of ownership analysis" },
+                            { level: 4, text: "Value-based sourcing with supplier innovation partnerships" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to market intelligence?",
+                        options: [
+                            { level: 1, text: "Little to no market monitoring" },
+                            { level: 2, text: "Basic price benchmarking for key categories" },
+                            { level: 3, text: "Regular market analysis with supply risk monitoring" },
+                            { level: 4, text: "Real-time market intelligence with predictive supply chain insights" }
+                        ]
+                    },
+                    {
+                        text: "How do you manage sourcing events?",
+                        options: [
+                            { level: 1, text: "Manual RFQ/RFP process via email" },
+                            { level: 2, text: "Basic e-sourcing tools for major events" },
+                            { level: 3, text: "Comprehensive e-sourcing platform with auction capabilities" },
+                            { level: 4, text: "AI-powered sourcing with automated supplier discovery and negotiation" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Supplier Management",
+                icon: "🤝",
+                questions: [
+                    {
+                        text: "How mature is your supplier relationship management?",
+                        options: [
+                            { level: 1, text: "Transactional relationships, no formal SRM program" },
+                            { level: 2, text: "Key supplier identification with periodic reviews" },
+                            { level: 3, text: "Tiered SRM program with strategic partnerships" },
+                            { level: 4, text: "Collaborative innovation partnerships with value co-creation" }
+                        ]
+                    },
+                    {
+                        text: "How do you assess and manage supplier risk?",
+                        options: [
+                            { level: 1, text: "Reactive response to supplier issues" },
+                            { level: 2, text: "Basic financial checks for new suppliers" },
+                            { level: 3, text: "Comprehensive risk assessment with ongoing monitoring" },
+                            { level: 4, text: "Predictive risk analytics with real-time supply chain visibility" }
+                        ]
+                    },
+                    {
+                        text: "How do you measure supplier performance?",
+                        options: [
+                            { level: 1, text: "No formal supplier performance tracking" },
+                            { level: 2, text: "Basic scorecards for key suppliers" },
+                            { level: 3, text: "Comprehensive KPIs with regular business reviews" },
+                            { level: 4, text: "Real-time performance dashboards with automated alerts and improvement plans" }
+                        ]
+                    },
+                    {
+                        text: "What is your approach to supplier diversity and sustainability?",
+                        options: [
+                            { level: 1, text: "No formal program" },
+                            { level: 2, text: "Basic tracking of diverse and sustainable suppliers" },
+                            { level: 3, text: "Active diversity program with sustainability requirements" },
+                            { level: 4, text: "Strategic ESG integration with scope 3 emissions tracking and circular economy initiatives" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Procurement Technology",
+                icon: "💻",
+                questions: [
+                    {
+                        text: "What is the state of your procurement technology landscape?",
+                        options: [
+                            { level: 1, text: "Manual processes, spreadsheet-based tracking" },
+                            { level: 2, text: "Basic P2P system with limited adoption" },
+                            { level: 3, text: "Integrated Source-to-Pay platform with good user adoption" },
+                            { level: 4, text: "Unified digital procurement platform with AI/ML capabilities" }
+                        ]
+                    },
+                    {
+                        text: "How automated is your procure-to-pay process?",
+                        options: [
+                            { level: 1, text: "Largely manual with paper invoices" },
+                            { level: 2, text: "Some electronic ordering and invoice processing" },
+                            { level: 3, text: "High automation with touchless PO and invoice processing" },
+                            { level: 4, text: "Intelligent automation with autonomous buying for routine purchases" }
+                        ]
+                    },
+                    {
+                        text: "How mature are your procurement analytics?",
+                        options: [
+                            { level: 1, text: "Basic spend reports, mostly manual" },
+                            { level: 2, text: "Spend cube with category visibility" },
+                            { level: 3, text: "Advanced analytics with savings tracking and compliance monitoring" },
+                            { level: 4, text: "Predictive analytics with prescriptive recommendations and AI insights" }
+                        ]
+                    },
+                    {
+                        text: "What is your contract management capability?",
+                        options: [
+                            { level: 1, text: "Contracts stored in shared drives, no central repository" },
+                            { level: 2, text: "Basic contract repository with manual tracking" },
+                            { level: 3, text: "Contract lifecycle management with alerts and compliance tracking" },
+                            { level: 4, text: "AI-powered CLM with automated risk analysis and obligation management" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Process & Compliance",
+                icon: "📋",
+                questions: [
+                    {
+                        text: "How well-defined are your procurement policies and processes?",
+                        options: [
+                            { level: 1, text: "Informal processes, policies not consistently followed" },
+                            { level: 2, text: "Documented policies with varying compliance" },
+                            { level: 3, text: "Clear policies embedded in systems with exception management" },
+                            { level: 4, text: "Dynamic policies with real-time compliance monitoring and automated enforcement" }
+                        ]
+                    },
+                    {
+                        text: "What is your level of spend under management?",
+                        options: [
+                            { level: 1, text: "Less than 40% of addressable spend" },
+                            { level: 2, text: "40-60% of addressable spend" },
+                            { level: 3, text: "60-80% of addressable spend" },
+                            { level: 4, text: "More than 80% with managed maverick spend" }
+                        ]
+                    },
+                    {
+                        text: "How do you handle procurement compliance and controls?",
+                        options: [
+                            { level: 1, text: "Limited controls, high maverick buying" },
+                            { level: 2, text: "Basic approval workflows for large purchases" },
+                            { level: 3, text: "Comprehensive controls with segregation of duties" },
+                            { level: 4, text: "Intelligent controls with real-time anomaly detection" }
+                        ]
+                    },
+                    {
+                        text: "How efficient is your requisition-to-order cycle?",
+                        options: [
+                            { level: 1, text: "Days to weeks, highly variable" },
+                            { level: 2, text: "3-5 days on average" },
+                            { level: 3, text: "1-2 days with clear SLAs" },
+                            { level: 4, text: "Same-day for routine items, automated catalog buying" }
+                        ]
+                    }
+                ]
+            },
+            {
+                name: "Organization & Talent",
+                icon: "👥",
+                questions: [
+                    {
+                        text: "How is your procurement function organized?",
+                        options: [
+                            { level: 1, text: "Decentralized, fragmented across business units" },
+                            { level: 2, text: "Hybrid with some central coordination" },
+                            { level: 3, text: "Center-led model with clear governance" },
+                            { level: 4, text: "Global procurement organization with centers of excellence" }
+                        ]
+                    },
+                    {
+                        text: "What is the skill profile of your procurement team?",
+                        options: [
+                            { level: 1, text: "Primarily transactional/administrative" },
+                            { level: 2, text: "Mix of tactical and some strategic skills" },
+                            { level: 3, text: "Strong category expertise and commercial skills" },
+                            { level: 4, text: "Data scientists, digital experts, and strategic business partners" }
+                        ]
+                    },
+                    {
+                        text: "How does procurement engage with the business?",
+                        options: [
+                            { level: 1, text: "Order taker, limited influence" },
+                            { level: 2, text: "Involved in major sourcing decisions" },
+                            { level: 3, text: "Proactive business partner with regular engagement" },
+                            { level: 4, text: "Strategic advisor, early involvement in business planning" }
+                        ]
+                    },
+                    {
+                        text: "How do you measure procurement value contribution?",
+                        options: [
+                            { level: 1, text: "Limited metrics, focus on cost" },
+                            { level: 2, text: "Basic savings tracking" },
+                            { level: 3, text: "Comprehensive value metrics including risk, sustainability, innovation" },
+                            { level: 4, text: "Real-time value dashboards with business impact measurement" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        const maturityLevels = {
+            1: { name: "Lagging", color: "level-1", description: "Reactive procurement with significant improvement opportunities" },
+            2: { name: "Developing", color: "level-2", description: "Foundational procurement capabilities with room for optimization" },
+            3: { name: "Advanced", color: "level-3", description: "Proactive procurement delivering strong value" },
+            4: { name: "Leading", color: "level-4", description: "World-class procurement driving competitive advantage" }
+        };
+
+        const recommendations = {
+            "Sourcing & Category Management": {
+                low: "Develop category strategies for top spend categories",
+                medium: "Implement structured sourcing methodology with TCO analysis",
+                high: "Establish comprehensive category management with market intelligence"
+            },
+            "Supplier Management": {
+                low: "Create tiered SRM program starting with strategic suppliers",
+                medium: "Implement formal supplier performance management",
+                high: "Establish supplier risk monitoring and relationship governance"
+            },
+            "Procurement Technology": {
+                low: "Invest in spend analytics and visibility tools",
+                medium: "Accelerate P2P automation and user adoption",
+                high: "Implement integrated Source-to-Pay platform"
+            },
+            "Process & Compliance": {
+                low: "Document and communicate procurement policies",
+                medium: "Embed policies in systems with approval workflows",
+                high: "Implement real-time compliance monitoring"
+            },
+            "Organization & Talent": {
+                low: "Define clear procurement roles and responsibilities",
+                medium: "Invest in category management and commercial skills",
+                high: "Develop center-led operating model with business partnering"
+            }
+        };
+
+        let currentCategoryIndex = 0;
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        function startAssessment() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('assessment-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const category = categories[currentCategoryIndex];
+            const question = category.questions[currentQuestionIndex];
+            const totalQuestions = categories.reduce((sum, c) => sum + c.questions.length, 0);
+            const currentQuestionNumber = categories.slice(0, currentCategoryIndex).reduce((sum, c) => sum + c.questions.length, 0) + currentQuestionIndex + 1;
+
+            document.getElementById('progress-category').textContent = `${category.icon} ${category.name} (${currentCategoryIndex + 1} of ${categories.length})`;
+            document.getElementById('progress-question').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+            document.getElementById('progress-bar').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+
+            document.getElementById('category-badge').textContent = category.name;
+            document.getElementById('question-text').textContent = question.text;
+
+            const optionsContainer = document.getElementById('answer-options');
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            const savedAnswer = answers[questionKey];
+
+            optionsContainer.innerHTML = question.options.map((option) => `
+                <button onclick="selectAnswer(${option.level})" 
+                    class="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-emerald-500 ${savedAnswer === option.level ? 'border-emerald-500 bg-emerald-500/20' : 'border-slate-600 bg-slate-700/50'}">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full ${savedAnswer === option.level ? 'bg-emerald-500' : 'bg-slate-600'} text-sm font-semibold">
+                            ${option.level}
+                        </span>
+                        <span class="text-slate-200">${option.text}</span>
+                    </div>
+                </button>
+            `).join('');
+
+            document.getElementById('prev-btn').disabled = currentCategoryIndex === 0 && currentQuestionIndex === 0;
+            document.getElementById('next-btn').disabled = !savedAnswer;
+            
+            const isLastQuestion = currentCategoryIndex === categories.length - 1 && currentQuestionIndex === categories[currentCategoryIndex].questions.length - 1;
+            document.getElementById('next-btn').textContent = isLastQuestion ? 'See Results →' : 'Next →';
+
+            document.getElementById('question-card').classList.remove('fade-in');
+            setTimeout(() => document.getElementById('question-card').classList.add('fade-in'), 10);
+        }
+
+        function selectAnswer(level) {
+            const questionKey = `${currentCategoryIndex}-${currentQuestionIndex}`;
+            answers[questionKey] = level;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const category = categories[currentCategoryIndex];
+            if (currentQuestionIndex < category.questions.length - 1) {
+                currentQuestionIndex++;
+            } else if (currentCategoryIndex < categories.length - 1) {
+                currentCategoryIndex++;
+                currentQuestionIndex = 0;
+            } else {
+                showResults();
+                return;
+            }
+            showQuestion();
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+            } else if (currentCategoryIndex > 0) {
+                currentCategoryIndex--;
+                currentQuestionIndex = categories[currentCategoryIndex].questions.length - 1;
+            }
+            showQuestion();
+        }
+
+        function calculateResults() {
+            const categoryScores = categories.map((category, catIndex) => {
+                const scores = category.questions.map((_, qIndex) => answers[`${catIndex}-${qIndex}`] || 1);
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                return { name: category.name, icon: category.icon, score: avg };
+            });
+
+            const overallScore = categoryScores.reduce((sum, c) => sum + c.score, 0) / categoryScores.length;
+            const overallLevel = Math.round(overallScore);
+
+            return { categoryScores, overallScore, overallLevel };
+        }
+
+        function showResults() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const { categoryScores, overallScore, overallLevel } = calculateResults();
+            const levelInfo = maturityLevels[overallLevel];
+
+            document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('overall-score').textContent = overallScore.toFixed(1);
+            document.getElementById('overall-level').textContent = levelInfo.name;
+            document.getElementById('overall-level').className = `inline-block px-4 py-2 rounded-full text-lg font-semibold ${levelInfo.color}`;
+            document.getElementById('overall-description').textContent = levelInfo.description;
+
+            document.getElementById('category-results').innerHTML = categoryScores.map(cat => {
+                const level = Math.round(cat.score);
+                const levelInfo = maturityLevels[level];
+                return `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-slate-400">${cat.score.toFixed(1)} — ${levelInfo.name}</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="${levelInfo.color} h-full transition-all duration-500" style="width: ${(cat.score / 4) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('gap-analysis').innerHTML = categoryScores
+                .map(cat => ({ ...cat, gap: 4 - cat.score }))
+                .sort((a, b) => b.gap - a.gap)
+                .map(cat => `
+                    <div class="flex items-center gap-4">
+                        <span class="text-2xl">${cat.icon}</span>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${cat.name}</span>
+                                <span class="text-red-400">Gap: ${cat.gap.toFixed(1)} levels</span>
+                            </div>
+                            <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="bg-red-500/50 h-full" style="width: ${(cat.gap / 3) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            const sortedCategories = [...categoryScores].sort((a, b) => a.score - b.score);
+            document.getElementById('recommendations').innerHTML = sortedCategories.slice(0, 3).map((cat, index) => {
+                const gap = 4 - cat.score;
+                const priority = gap >= 2 ? 'high' : gap >= 1 ? 'medium' : 'low';
+                const rec = recommendations[cat.name][priority];
+                return `
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xl">${cat.icon}</span>
+                            <span class="font-semibold">${cat.name}</span>
+                            <span class="ml-auto text-sm px-2 py-1 rounded ${index === 0 ? 'bg-red-500/20 text-red-400' : index === 1 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                Priority ${index + 1}
+                            </span>
+                        </div>
+                        <p class="text-slate-300">${rec}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('results-content');
+            const opt = {
+                margin: 10,
+                filename: 'Procurement-Maturity-Assessment-Results.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#0f172a' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
