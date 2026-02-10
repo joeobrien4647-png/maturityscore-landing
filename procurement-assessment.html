@@ -93,6 +93,33 @@
         </div>
     </div>
 
+    <!-- Email Capture Screen -->
+    <div id="email-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-lg text-center">
+            <div class="mb-6">
+                <span class="text-5xl">🎉</span>
+            </div>
+            <h1 class="text-3xl font-bold mb-4">Assessment Complete!</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Enter your email to unlock your personalized maturity report.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-6">
+                <div class="mb-4">
+                    <input type="email" id="user-email" placeholder="you@company.com" 
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 text-center text-lg">
+                </div>
+                <button onclick="submitEmail()" id="submit-email-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                    Get My Results →
+                </button>
+                <p class="text-slate-500 text-sm mt-4">We'll send you improvement resources. No spam, ever.</p>
+            </div>
+            <button onclick="skipEmail()" class="text-slate-500 hover:text-slate-300 text-sm underline">
+                Skip and see basic results
+            </button>
+        </div>
+    </div>
+
     <!-- Results Screen -->
     <div id="results-screen" class="hidden min-h-screen p-6">
         <div class="max-w-4xl mx-auto">
@@ -457,10 +484,42 @@
                 currentCategoryIndex++;
                 currentQuestionIndex = 0;
             } else {
-                showResults();
+                showEmailScreen();
                 return;
             }
             showQuestion();
+        }
+
+        function showEmailScreen() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('email-screen').classList.remove('hidden');
+        }
+
+        function submitEmail() {
+            const email = document.getElementById('user-email').value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('_subject', 'MaturityScore Assessment Lead - Procurement');
+            formData.append('assessment', 'Procurement Operations');
+            formData.append('timestamp', new Date().toISOString());
+            
+            fetch('https://formsubmit.co/ajax/minihello@agentmail.to', {
+                method: 'POST',
+                body: formData
+            }).catch(() => {});
+            
+            window.userEmail = email;
+            showResults();
+        }
+
+        function skipEmail() {
+            window.userEmail = null;
+            showResults();
         }
 
         function prevQuestion() {
@@ -488,6 +547,7 @@
 
         function showResults() {
             document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('email-screen').classList.add('hidden');
             document.getElementById('results-screen').classList.remove('hidden');
 
             const { categoryScores, overallScore, overallLevel } = calculateResults();
