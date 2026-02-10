@@ -95,6 +95,33 @@
         </div>
     </div>
 
+    <!-- Email Capture Screen -->
+    <div id="email-screen" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-lg text-center">
+            <div class="mb-6">
+                <span class="text-5xl">🎉</span>
+            </div>
+            <h1 class="text-3xl font-bold mb-4">Assessment Complete!</h1>
+            <p class="text-xl text-slate-300 mb-8">
+                Enter your email to unlock your personalized maturity report.
+            </p>
+            <div class="bg-slate-800 rounded-xl p-6 mb-6">
+                <div class="mb-4">
+                    <input type="email" id="user-email" placeholder="you@company.com" 
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 text-center text-lg">
+                </div>
+                <button onclick="submitEmail()" id="submit-email-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
+                    Get My Results →
+                </button>
+                <p class="text-slate-500 text-sm mt-4">We'll send you improvement resources. No spam, ever.</p>
+            </div>
+            <button onclick="skipEmail()" class="text-slate-500 hover:text-slate-300 text-sm underline">
+                Skip and see basic results
+            </button>
+        </div>
+    </div>
+
     <!-- Results Screen -->
     <div id="results-screen" class="hidden min-h-screen p-6">
         <div class="max-w-4xl mx-auto">
@@ -396,10 +423,44 @@
                 currentCategoryIndex++;
                 currentQuestionIndex = 0;
             } else {
-                showResults();
+                showEmailScreen();
                 return;
             }
             showQuestion();
+        }
+
+        function showEmailScreen() {
+            document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('email-screen').classList.remove('hidden');
+        }
+
+        function submitEmail() {
+            const email = document.getElementById('user-email').value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            
+            // Send to FormSubmit
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('_subject', 'MaturityScore Assessment Lead - Finance');
+            formData.append('assessment', 'Finance Operations');
+            formData.append('timestamp', new Date().toISOString());
+            
+            fetch('https://formsubmit.co/ajax/minihello@agentmail.to', {
+                method: 'POST',
+                body: formData
+            }).catch(() => {}); // Fire and forget
+            
+            // Store for later use
+            window.userEmail = email;
+            showResults();
+        }
+
+        function skipEmail() {
+            window.userEmail = null;
+            showResults();
         }
 
         function prevQuestion() {
@@ -480,6 +541,7 @@
 
         function showResults() {
             document.getElementById('assessment-screen').classList.add('hidden');
+            document.getElementById('email-screen').classList.add('hidden');
             document.getElementById('results-screen').classList.remove('hidden');
 
             const { categoryScores, overallScore } = calculateScores();
@@ -538,19 +600,39 @@
                     </div>
                 </div>
 
+                <div class="bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-xl p-6 mb-8">
+                    <div class="flex items-start gap-4">
+                        <span class="text-4xl">🔓</span>
+                        <div class="flex-1">
+                            <h2 class="text-xl font-semibold mb-2">Unlock Premium Report</h2>
+                            <p class="text-slate-300 mb-4">
+                                Get the full 20-page analysis with:
+                            </p>
+                            <ul class="space-y-2 text-slate-300 mb-6">
+                                <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Industry benchmark comparison (vs. 500+ organizations)</li>
+                                <li class="flex items-start gap-2"><span class="text-amber-400">★</span> 90-day improvement roadmap with quick wins</li>
+                                <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Business case templates for each initiative</li>
+                                <li class="flex items-start gap-2"><span class="text-amber-400">★</span> Executive presentation slides</li>
+                            </ul>
+                            <div class="flex items-center gap-4">
+                                <a href="mailto:minihello@agentmail.to?subject=Premium%20Report%20-%20Finance%20Assessment&body=I%20just%20completed%20the%20Finance%20Operations%20assessment%20and%20would%20like%20to%20learn%20more%20about%20the%20Premium%20Report." 
+                                   class="inline-block bg-amber-500 hover:bg-amber-600 text-black font-semibold py-3 px-6 rounded-lg transition-all">
+                                    Get Premium Report — $49
+                                </a>
+                                <span class="text-slate-400 text-sm">One-time purchase</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-xl p-6">
-                    <h2 class="text-xl font-semibold mb-4">📈 What's Next?</h2>
+                    <h2 class="text-xl font-semibold mb-4">💬 Want Expert Guidance?</h2>
                     <p class="text-slate-300 mb-4">
-                        This assessment provides a starting point. For a deeper dive including:
+                        Need help implementing these improvements? Get a 30-minute strategy call with a transformation expert.
                     </p>
-                    <ul class="space-y-2 text-slate-300 mb-6">
-                        <li>• Detailed benchmarking against industry peers</li>
-                        <li>• Customized transformation roadmap</li>
-                        <li>• Business case for improvement initiatives</li>
-                    </ul>
-                    <a href="mailto:minihello@agentmail.to?subject=MaturityScore%20Deep%20Dive" 
+                    <a href="mailto:minihello@agentmail.to?subject=Strategy%20Call%20Request%20-%20Finance%20Operations" 
                        class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all">
-                        Get in Touch →
+                        Book a Call →
                     </a>
                 </div>
             `;
