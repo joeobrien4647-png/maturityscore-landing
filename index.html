@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MaturityScore.io — Know Where You Stand</title>
-  <meta name="description" content="Self-service capability maturity assessments in minutes, not months. Get actionable insights without the consultant price tag.">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .gradient-bg {
@@ -19,8 +18,8 @@
   <!-- Hero -->
   <div class="max-w-4xl mx-auto px-6 py-20">
     <div class="text-center">
-      <div class="inline-block px-4 py-1 rounded-full bg-green-500/20 text-green-300 text-sm font-medium mb-6">
-        🚀 FREE Beta — Try It Now!
+      <div class="inline-block px-4 py-1 rounded-full bg-blue-500/20 text-blue-300 text-sm font-medium mb-6">
+        Coming Soon — Join the Waitlist
       </div>
       
       <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
@@ -33,93 +32,25 @@
         Get actionable insights without the consultant price tag.
       </p>
 
-      <!-- Try It Now Buttons -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 justify-center mb-8 max-w-4xl mx-auto">
-        <a href="assessment.html" class="inline-block px-5 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-lg transition-all hover:scale-105 transform">
-          📊 Finance
-        </a>
-        <a href="hr-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-purple-600 hover:bg-purple-700 font-bold text-lg transition-all hover:scale-105 transform">
-          👥 HR
-        </a>
-        <a href="procurement-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold text-lg transition-all hover:scale-105 transform">
-          🛒 Procurement
-        </a>
-        <a href="supply-chain-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-teal-600 hover:bg-teal-700 font-bold text-lg transition-all hover:scale-105 transform">
-          🚚 Supply Chain
-        </a>
-        <a href="it-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-bold text-lg transition-all hover:scale-105 transform">
-          💻 IT
-        </a>
-        <a href="cs-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-violet-600 hover:bg-violet-700 font-bold text-lg transition-all hover:scale-105 transform">
-          🎧 Customer Service
-        </a>
-        <a href="legal-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-amber-600 hover:bg-amber-700 font-bold text-lg transition-all hover:scale-105 transform">
-          ⚖️ Legal
-        </a>
-        <a href="marketing-assessment.html" class="inline-block px-5 py-4 rounded-xl bg-pink-600 hover:bg-pink-700 font-bold text-lg transition-all hover:scale-105 transform">
-          📣 Marketing
-        </a>
-      </div>
-      <p class="text-gray-400 text-sm mb-4">Choose your assessment — all 8 free during beta</p>
-      
-      <p class="text-gray-400 text-sm mb-8">— or join the waitlist for full product launch —</p>
-
       <!-- Waitlist Form -->
       <form id="waitlist-form" class="max-w-md mx-auto mb-12">
         <div class="flex gap-3">
           <input 
             type="email" 
-            id="email-input"
-            name="email" 
+            id="email" 
             placeholder="you@company.com" 
             required
             class="flex-1 px-5 py-4 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50"
           >
           <button 
             type="submit"
-            id="submit-btn"
             class="px-8 py-4 rounded-lg accent-gradient font-semibold hover:opacity-90 transition-opacity"
           >
             Join Waitlist
           </button>
         </div>
-        <p id="form-msg" class="mt-3 text-sm text-gray-400">We'll notify you when we launch. No spam, ever.</p>
+        <p id="form-message" class="mt-3 text-sm text-gray-400"></p>
       </form>
-      <script>
-        document.getElementById('waitlist-form').addEventListener('submit', async function(e) {
-          e.preventDefault();
-          const email = document.getElementById('email-input').value;
-          const msg = document.getElementById('form-msg');
-          const btn = document.getElementById('submit-btn');
-          btn.disabled = true;
-          btn.textContent = 'Joining...';
-          try {
-            const res = await fetch('https://formsubmit.co/ajax/minihello@agentmail.to', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                email: email,
-                _subject: 'MaturityScore Waitlist Signup',
-                _template: 'table'
-              })
-            });
-            const data = await res.json();
-            if (data.success) {
-              msg.textContent = "🎉 You're on the list! We'll be in touch soon.";
-              msg.className = "mt-3 text-sm text-green-400";
-              document.getElementById('email-input').value = '';
-            } else { throw new Error(); }
-          } catch(err) {
-            msg.innerHTML = 'Something went wrong. Email us at <a href="mailto:minihello@agentmail.to" class="text-blue-400">minihello@agentmail.to</a>';
-            msg.className = "mt-3 text-sm text-yellow-400";
-          }
-          btn.disabled = false;
-          btn.textContent = 'Join Waitlist';
-        });
-      </script>
 
       <!-- Price Anchor -->
       <p class="text-gray-400 text-sm">
@@ -214,13 +145,38 @@
     <div class="max-w-4xl mx-auto px-6 text-center text-gray-500 text-sm">
       <p>© 2026 MaturityScore.io — All rights reserved</p>
       <p class="mt-2">Questions? <a href="mailto:minihello@agentmail.to" class="text-blue-400 hover:underline">minihello@agentmail.to</a></p>
-      <p class="mt-4 text-xs text-gray-600">
-        Featured on: 
-        <a href="https://aitooltrek.com" target="_blank" class="hover:text-gray-400">AI Tool Trek</a> · 
-        <a href="https://www.aitoolzdir.com" target="_blank" class="hover:text-gray-400">AI Toolz Dir</a> · 
-        <a href="https://aidirs.best" target="_blank" class="hover:text-gray-400">AiDirs</a>
-      </p>
+      <!-- Directory badges -->
+      <div class="mt-4 flex justify-center gap-4 flex-wrap">
+        <a href="https://tooldirs.com" target="_blank" rel="noopener"><img src="https://tooldirs.com/badges/badge-dark.svg" alt="Featured on ToolDirs" height="36"></a>
+      </div>
     </div>
   </footer>
+
+  <script>
+    document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const msg = document.getElementById('form-message');
+      
+      try {
+        const res = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        
+        if (res.ok) {
+          msg.textContent = "🎉 You're on the list! We'll be in touch soon.";
+          msg.className = "mt-3 text-sm text-green-400";
+          document.getElementById('email').value = '';
+        } else {
+          throw new Error('Failed');
+        }
+      } catch (err) {
+        msg.textContent = "Something went wrong. Try again or email us directly.";
+        msg.className = "mt-3 text-sm text-red-400";
+      }
+    });
+  </script>
 </body>
 </html>
